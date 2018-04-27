@@ -1,63 +1,54 @@
-const WebSocketServer = require('uws').Server;
-const wss = new WebSocketServer({port: 8002});
 
-import { db } from './db';
 import { 
     RequestId, 
-    initRequestListeners, 
+    initRespondListeners, 
     RespondHandler,
     VoxelSpec, 
+    SocketInterface,
 } from '../spec';
 
-wss.on('connection', function(ws) {
-    ws.on('message', (msg) => {
-        const req = JSON.parse(msg);
-        let res = {};
-        switch (req.id) {
-            case RequestId.category_list:
-                handler(RequestId.category_list, ws, 
-                    () => db.get(`project.${req.projet}.categoryList`).value(),
-                )
-                break;
+export const onrequest = initRespondListeners();
 
-            case RequestId.add_category:
-                handler(RequestId.add_category, ws,
-                    () => {
-                        const postid = db.get(`project.${req.projet}.categoryList`)
-                            .push(req.category)
-                            .write();
-                        return (postid) ? true : false;
-                    }
-                )
-                break;
-            
-            case RequestId.add_voxel:
-                handler(RequestId.add_voxel, ws, 
-                    () => {
-                        const project =`project.${req.project}` 
-                        const id = db.get(`${project}.id_count`).value() + 1;
-                        db.set(`${project}.id_count`, id).write();
-                        const res = req.spec;
-                        res[id] = id;
-                        db.get(`${project}.voxelSpec`).set(req.name, res).write();
-                        return true;
-                    }
-                ) 
-                break;
-            
-            case RequestId.new_project:
-                handler(RequestId.new_project, ws, 
-                    () => {
+export class ServerProtocol {
+    public socket;
+    public db:any;
+    
+    constructor (socket:SocketInterface, db:any) {
+        this.socket = socket;
+        this.db = db;
 
-                    }
-                ) 
-                break;
+        const onmessage = new Array(RequestId.LENGTH); 
+        onmessage[RequestId.category_list] = (id, req) => {
+            const res = db.get(`project.${req.projet}.categoryList`).value(); 
+            this.socket.send(id, res);
         }
-    })
-})
 
-function handler (id:RequestId, ws:any, action:() => any) {
-    const res = { id };
-    const data = action();
-    ws.send(JSON.stringify(res));
+        onmessage[RequestId.add_category] = (id, req) => {
+            const postid = db.get(`project.${req.projet}.categoryList`)
+                .push(req.category)
+                .write();  
+            const success = postid ? true : false;
+            this.socket.send(id, success);
+        }
+
+        onmessage[RequestId.add_voxel] = (id, req) => {
+            const project =`project.${req.project}` 
+            const project_id = db.get(`${project}.id_count`).value() + 1;
+            db.set(`${project}.id_count`, id).write();
+            const spec = req.spec;
+            spec['id'] = id;
+            db.get(`${project}.voxelSpec`).set(req.name, spec).write();
+            this.socket.send(id, true);
+        }
+
+        onmessage[RequestId.new_project] = (id, req) => {
+
+        }
+
+        onmessage[RequestId.download_project] = (id, req) => {
+
+        }
+
+        this.socket.onmessage = onmessage;
+    }
 }

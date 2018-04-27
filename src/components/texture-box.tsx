@@ -77,8 +77,8 @@ export class TextureBox extends React.Component<props, state> {
                 { !this.state.linked &&
                 <div style={{
                     border: '1px solid black',
-                    width: '200px',
-                    height: '200px',
+                    width: '100px',
+                    height: '100px',
                 }}
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDrop}

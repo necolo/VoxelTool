@@ -1,8 +1,6 @@
 import * as React from 'react';
 
 import { UI } from '../client/ui';
-import { req_add_category } from '../client/protocol';
-
 
 interface props {
     ui:UI;
@@ -50,9 +48,8 @@ export class RightPanel extends React.Component<props, state> {
 
         return (
             <div style={{
-                width: '600px',
-                height: '100%',
-
+                WebkitFlex: 1,
+                flex: 1,
             }}>
                 <div style={this.boxStyle}>
                     <span>Category</span>
@@ -156,8 +153,7 @@ export class RightPanel extends React.Component<props, state> {
 
     public handleAddCategory = (ev) => {
         if (this.add_category_input) {
-            req_add_category(
-                this.props.ui.state.project,
+            this.props.ui.protocol.add_category(
                 this.add_category_input.value,
                 (data) => {
                     if (data && this.add_category_input) {

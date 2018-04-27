@@ -1,59 +1,48 @@
-import WebSocket = require('uws');
 import { 
     RequestId, 
-    initRequestListeners, 
+    initRespondListeners, 
     RespondHandler,
     VoxelSpec, 
+    SocketInterface,
 } from '../spec';
 
+export const onrespond = initRespondListeners();
 
-export const ws = new WebSocket(
-    `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`,
-)
+export class ClientProtocol {
+    public socket:SocketInterface;
+    public project:string = 'default';
 
-export const reqListeners = initRequestListeners();
-
-ws.on('message', (msg) => {
-    const res = JSON.parse(msg);
-    const actions = reqListeners[res.id];  
-    for (let action of actions) {
-        action(res.data, ws);
+    constructor (socket:SocketInterface) {
+        this.socket = socket;
     }
-})
 
-export function req_category_list(project:string, cb:RespondHandler<string[]>) {
-    const id = RequestId.category_list;
-    const req = { id, project }
-    ws.send(JSON.stringify(req));;
-    reqListeners[id].push(cb);
-}
+    public get_category_list (cb:RespondHandler<string[]>) {
+        const id = RequestId.category_list;
+        const req = this.project;
+        this.socket.send(id, req);
+        onrespond[id].push(cb);
+    }
 
-export function req_add_category(project:string, category:string, cb:RespondHandler<boolean>) {
-    const id = RequestId.add_category;
-    const req = {id, project, category };
-    ws.send(JSON.stringify(req));
-    reqListeners[id].push(cb);
-}
+    public add_category(category:string, cb:RespondHandler<boolean>) {
+        const id = RequestId.add_category;
+        const req = { project: this.project, category };
+        this.socket.send(id, req);
+        onrespond[id].push(cb);
+    }
 
-export function req_add_voxel(project:string, spec, cb:RespondHandler<boolean>) {
-    const id = RequestId.add_voxel;
-    const req = {
-        id,
-        project,
-        spec,        
-    };
+    public add_voxel(spec, cb:RespondHandler<boolean>) {
+        const id = RequestId.add_voxel;
+        const req = {
+            project: this.project,
+            spec,
+        }
+        this.socket.send(id, req);
+        onrespond[id].push(cb);
+    }
 
-    ws.send(JSON.stringify(req));
-    reqListeners[id].push(cb);
-}
-
-export function new_project(project:string, cb:RespondHandler<boolean>) {
-    const id = RequestId.add_voxel;
-    const req = {
-        id,
-        project,
-    };
-
-    ws.send(JSON.stringify(req));
-    reqListeners[id].push(cb);
+    public new_project(project:string, cb:RespondHandler<boolean>) {
+        const id = RequestId.new_project;
+        this.socket.send(id, project);
+        onrespond[id].push(cb);
+    }
 }

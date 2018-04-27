@@ -13,10 +13,13 @@ interface props {
 interface state {
 
 }
+
 export class Container extends React.Component<props, state> {
     public render() {
         return (
-            <div>
+            <div style={{
+
+            }}>
                 <LeftPanel 
                     // ui={this.props.ui}
                 />

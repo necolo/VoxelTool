@@ -3,13 +3,15 @@ export enum RequestId {
     add_category,
     add_voxel,
     new_project,
+    download_project,
     LENGTH,
 }
 
-export type RespondHandler<datatype> = (data:datatype, ws:any) => void;
-export type RequestListenersT = RespondHandler<any>[][];
-export function initRequestListeners() : RequestListenersT {
-    const res:RequestListenersT = [];
+export type RespondHandler<datatype> = (data:datatype, socket:SocketInterface) => void;
+
+export type RespondListenersT = RespondHandler<any>[][];
+export function initRespondListeners() : RespondListenersT {
+    const res:RespondListenersT = [];
     for (let i = 0; i < RequestId.LENGTH; i ++) {
         res.push([]);
     }
@@ -29,4 +31,14 @@ export interface VoxelSpec {
     category:string;
 }
 
+export type MessageT = (id:number, data:any) => void;
+export interface SocketInterface {
+    send:(id:number, data:any) => void;
+    set_onmessage:(onmessage:MessageT[]) => void; 
+}
 
+export interface DBProject {
+    categoryList:string[];
+    voxelSpec:{ [name:string]:VoxelSpec };
+    id_count:number;
+}

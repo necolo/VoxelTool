@@ -15,9 +15,15 @@ interface state {
 export class CenterPanel extends React.Component<props, state> {
     public render () {
         return (
-           <div>
-                <canvas></canvas>
-                <div className="texture-boxes">
+           <div style={{
+                WebkitFlex: 2,
+                flex: 2,
+           }}>
+                <canvas width={800} height={800}></canvas>
+
+                <div style={{
+                    display: 'inline-block',
+                }}>
                     { SIDES.map((side) => 
                         <TextureBox 
                             ui={this.props.ui}
