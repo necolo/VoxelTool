@@ -2,15 +2,16 @@ const WebSocketServer = require('uws').Server;
 import { db } from './server/db';
 
 import createServer = require('./server');
-import { SocketInterface, MessageT } from './spec';
+import { SocketInterface, MessageT, RequestId } from './spec';
 
 const wss = new WebSocketServer({port: 8002});
 
 export class ServerSocket implements SocketInterface {
-    public onmessage!:MessageT[];
+    public onmessage:MessageT[];
 
     constructor () {
         const self = this;
+        this.onmessage = new Array(RequestId.LENGTH);
         wss.on('connection', function (ws) {
             ws.on('message', (msg) => {
                 const { id, data } = JSON.parse(msg);
@@ -26,8 +27,8 @@ export class ServerSocket implements SocketInterface {
         }))
     }
 
-    public set_onmessage (onmessage:MessageT[]) {
-        this.onmessage = onmessage;
+    public get_onmessage () : MessageT[] {
+        return this.onmessage;
     }
 }
 

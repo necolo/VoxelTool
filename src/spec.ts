@@ -4,6 +4,7 @@ export enum RequestId {
     add_voxel,
     new_project,
     download_project,
+    get_projects,
     LENGTH,
 }
 
@@ -34,7 +35,7 @@ export interface VoxelSpec {
 export type MessageT = (id:number, data:any) => void;
 export interface SocketInterface {
     send:(id:number, data:any) => void;
-    set_onmessage:(onmessage:MessageT[]) => void; 
+    get_onmessage:() => MessageT[]; 
 }
 
 export interface DBProject {

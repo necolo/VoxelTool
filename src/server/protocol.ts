@@ -1,4 +1,3 @@
-
 import { 
     RequestId, 
     initRespondListeners, 
@@ -10,14 +9,14 @@ import {
 export const onrequest = initRespondListeners();
 
 export class ServerProtocol {
-    public socket;
+    public socket:SocketInterface;
     public db:any;
     
     constructor (socket:SocketInterface, db:any) {
         this.socket = socket;
         this.db = db;
 
-        const onmessage = new Array(RequestId.LENGTH); 
+        const onmessage = this.socket.get_onmessage();
         onmessage[RequestId.category_list] = (id, req) => {
             const res = db.get(`project.${req.projet}.categoryList`).value(); 
             this.socket.send(id, res);
@@ -49,6 +48,9 @@ export class ServerProtocol {
 
         }
 
-        this.socket.onmessage = onmessage;
+        onmessage[RequestId.get_projects] = (id, req) => {
+            const projects = db.get(`project`).value();
+            this.socket.send(id, Object.keys(projects));
+        }
     }
 }

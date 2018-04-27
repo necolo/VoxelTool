@@ -18,14 +18,19 @@ export class CenterPanel extends React.Component<props, state> {
            <div style={{
                 WebkitFlex: 2,
                 flex: 2,
+                textAlign: 'center',
            }}>
-                <canvas width={800} height={800}></canvas>
+                <canvas width={600} height={600} style={{
+                    border: '1px solid black',
+                }}></canvas>
 
                 <div style={{
-                    display: 'inline-block',
+                    display: "flex",
+                    textAlign: 'center',
                 }}>
-                    { SIDES.map((side) => 
+                    { SIDES.map((side, index) => 
                         <TextureBox 
+                            key={index}
                             ui={this.props.ui}
                             side={side}
                         />

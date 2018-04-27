@@ -9,7 +9,6 @@ import {
 } from './spec';
 import * as ClientProtocol from './client/protocol';
 
-
 interface SocketHandler {
     getMessage:MessageT;
     onmessage:MessageT[];
@@ -22,14 +21,21 @@ class SocketHub {
     constructor () {
         this.client = this._initHandler('client');
         this.server = this._initHandler('server');
+
+
     }
 
     private _initHandler (_handler:string) : SocketHandler {
+        const self = this;;
         return {
             onmessage: new Array(RequestId.LENGTH),
 
             getMessage: (id:number, data:any) => {
-                this[_handler].onmessage[id](id, data);
+                console.log('get message: ', _handler, RequestId[id], data, this[_handler].onmessage);
+                if (typeof this[_handler].onmessage[id] === 'function') {
+                    return this[_handler].onmessage[id](id, data);
+                }
+                return null; 
             },
         }
     }
@@ -46,8 +52,8 @@ class ClientSocket implements SocketInterface {
         this.hub.server.getMessage(id, data);
     }
 
-    public set_onmessage (onmessage:MessageT[]) {
-        this.hub.client.onmessage = onmessage;
+    public get_onmessage () : MessageT[] {
+        return this.hub.client.onmessage;
     }
 }
 
@@ -62,15 +68,10 @@ class ServerSocket implements SocketInterface {
         this.hub.client.getMessage(id, data);
     }
 
-    public set_onmessage (onmessage:MessageT[]) {
-        this.hub.server.onmessage = onmessage;
+    public get_onmessage () : MessageT[] {
+        return this.hub.server.onmessage;
     }
 }
-
-const handler = new SocketHub();
-const clientSocket = new ClientSocket(handler);
-const serverSocket = new ServerSocket(handler);
-createClient(clientSocket);
 
 class DB {
     public data:{project: {[projecet:string]:DBProject}};
@@ -134,4 +135,8 @@ class DB {
 }
 
 const db = new DB();
+const hub = new SocketHub();
+const clientSocket = new ClientSocket(hub);
+const serverSocket = new ServerSocket(hub);
 createServer(serverSocket, db);
+createClient(clientSocket);

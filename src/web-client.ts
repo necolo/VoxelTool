@@ -1,8 +1,7 @@
 import WebSocket = require('uws');
 
 import createClient = require('./client');
-import { SocketInterface, MessageT } from './spec';
-import { onrespond } from './client/protocol';
+import { SocketInterface, MessageT, RequestId } from './spec';
 
 export const ws = new WebSocket(
     `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`,
@@ -10,13 +9,14 @@ export const ws = new WebSocket(
 
 
 export class ClientSocket implements SocketInterface{
+    public onmessage:MessageT[];
+
     constructor () {
+        const self = this;
+        this.onmessage = new Array(RequestId.LENGTH);
         ws.on('message', (msg) => {
             const { id, data } = JSON.parse(msg);
-            const actions = onrespond[id];  
-            for (let action of actions) {
-                action(data, this);
-            }
+            self.onmessage[id](id, data);
         });
     }
 
@@ -27,8 +27,8 @@ export class ClientSocket implements SocketInterface{
         }));
     }
 
-    public set_onmessage (onmessage:MessageT[]) {
-
+    public get_onmessage () : MessageT[] {
+        return this.onmessage;
     }
 }
 

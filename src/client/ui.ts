@@ -28,22 +28,26 @@ export enum Thumbnail {
 
 export interface UIState {
     texture_src:TextureSrc;
-    project:string;
     categoryList:string[];
     thumbnail: [string, string, string];
     texture: [string, string, string, string, string, string];
+    projects:string[];
+    in_project:string;
 }
 
 export class UI {
     public rightPanelListener = new UIListener();
+    public leftPanelListener = new UIListener();
+
     public protocol:ClientProtocol;
 
     public state:UIState = {
         texture_src: {} as TextureSrc, 
-        project: 'default',
         categoryList: [],
         thumbnail: ['', '', ''],
         texture: ['', '', '', '', '', ''],
+        projects: [],
+        in_project: 'default',
     }
 
     constructor(protocol:ClientProtocol) {
@@ -52,6 +56,12 @@ export class UI {
         for (let side of SIDES) {
             this.state.texture_src[side] = '';
         }
+
+        this.protocol.get_projects((projects) => {
+            console.log('projects', projects);
+            this.state.projects = projects;
+            this.leftPanelListener.notify();
+        })
     }
 
     public setTextureSrc(side:string, src:string) {
@@ -59,7 +69,7 @@ export class UI {
     }
 
     public setProject(project:string) {
-        this.state.project = project;
+        this.state.in_project = project;
         this.protocol.project = project;
         this.protocol.get_category_list((categoryList) => {
             this.state.categoryList = categoryList;

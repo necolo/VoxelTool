@@ -5,7 +5,7 @@
   "author": "Necolo Lv.C",
   "license": "MIT",
   "scripts": {
-    "watch": "tsc --watch",
+    "watch": "tsc --watch & watchify --debug src/box3-web-client -p [ tsify --project tsconfig.json ] -o bundle.js",
     "start": "budo src/local.ts:bundle.js -p 8233 --dir . --serve bundle.js --open --live -- --debug -p [ tsify --project tsconfig.json ]"
   },
   "dependencies": {

@@ -63,7 +63,10 @@ export class TextureBox extends React.Component<props, state> {
     public render () {
         const { side, ui } = this.props;
         return (
-            <div>
+            <div style={{
+                margin: '10px',
+                textAlign: 'center',
+            }}>
                 <select onChange={this.handleSelect}>
                     <option value="default">default</option>
                     {side !== 'left' && <option value="left">same to left</option>}
@@ -79,6 +82,7 @@ export class TextureBox extends React.Component<props, state> {
                     border: '1px solid black',
                     width: '100px',
                     height: '100px',
+                    marginTop: '10px',
                 }}
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDrop}

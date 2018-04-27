@@ -18,10 +18,10 @@ export class Container extends React.Component<props, state> {
     public render() {
         return (
             <div style={{
-
+                display: 'flex',
             }}>
                 <LeftPanel 
-                    // ui={this.props.ui}
+                    ui={this.props.ui}
                 />
 
                 <CenterPanel
