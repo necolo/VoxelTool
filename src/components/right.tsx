@@ -204,8 +204,6 @@ export class RightPanel extends React.Component<props, state> {
             })
 
         })
-
-
     }
 
     public handleAddCategory = (ev) => {
