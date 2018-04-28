@@ -27,7 +27,7 @@ export type MessageHandler<dataType> = (id:number, data:dataType) => void;
 
 export interface SocketInterface {
     send:(id:number, data:any) => void;
-    sub:(id:number, handler:MessageHandler<any>) => number;
+    sub:(id:number, handler:MessageHandler<any>) => void;
     unsub:(id:number, index:number) => void;
 }
 

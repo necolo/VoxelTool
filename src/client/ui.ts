@@ -121,5 +121,8 @@ export class UI {
                 linked: [],
             }
         }
+        for (let listener of this.textureBoxListeners) {
+            listener.notify();
+        }
     }
 }

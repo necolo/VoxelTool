@@ -59,8 +59,11 @@ class ClientSocket implements SocketInterface {
         this.hub.server.notify(id, data);
     }
 
-    public sub (id:number, handler:MessageHandler<any>) : number {
-        return this.hub.client.sub(id, handler);
+    public sub (id:number, handler:MessageHandler<any>) {
+        const subid = this.hub.client.sub(id, (id, data) => {
+            handler(id, data);
+            this.unsub(id, subid);
+        })
     }
 
     public unsub (id:number, index:number) {
@@ -79,8 +82,11 @@ class ServerSocket implements SocketInterface {
         this.hub.client.notify(id, data);
     }
 
-    public sub (id:number, handler:MessageHandler<any>) : number {
-        return this.hub.server.sub(id, handler);
+    public sub (id:number, handler:MessageHandler<any>) {
+        const subid =  this.hub.server.sub(id, (id, data) => {
+            handler(id, data);
+            this.unsub(id, subid);
+        });
     }
 
     public unsub (id:number, index:number) {
