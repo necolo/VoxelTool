@@ -1,0 +1,85 @@
+.container {
+    display: flex;
+
+    .left_container {
+        flex: none;
+        width: 200px;
+
+        .project_item {
+            padding: 5px;
+            text-align: center;
+            border-bottom: 1px solid grey;
+            width: 100%;
+            height: 20px;
+        }
+    }
+
+    .middle_container {
+        flex: 2;
+        text-align: center;
+
+        canvas {
+            border: 1px solid black;
+        }
+
+        .texture_box_container {
+            display: flex;
+            text-align: center;
+
+            .texture_box {
+                @edge: 80px;
+
+                margin: 10px;
+                text-align: center;
+                margin-left: auto;
+                margin-right: auto;
+
+                .box_image {
+                    border: 1px solid black;
+                    width: @edge;
+                    height: @edge;
+                    margin-top: 10px;
+                    margin-left: auto;
+                    margin-right: auto;
+                    
+                    img {
+                        width: @edge;
+                        height: @edge;
+                    }
+                }
+            }
+        }
+    }
+
+    .right_container {
+        flex: 1;
+        text-align: left;
+
+        .box {
+            margin: 15px;
+
+            span {
+                margin-right: 5px;
+            }
+
+            .number_input {
+                width: 35px;
+                margin-right: 5px;
+            }
+
+            .btn_send {
+                margin-left: 5px;
+                background: #E91E63;
+                color: white;
+                height: 20px;
+            }
+        }
+
+        .btn_save {
+            width: 100%;
+            height: 30px;
+            color: white;
+            background: #4CAF50;
+        }
+    }
+}

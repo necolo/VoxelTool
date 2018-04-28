@@ -267,7 +267,7 @@ browserify-zlib@~0.2.0:
   dependencies:
     pako "~1.0.5"
 
-browserify@^16.1.0:
+browserify@^16.1.0, browserify@^16.2.0:
   version "16.2.0"
   resolved "https://registry.yarnpkg.com/browserify/-/browserify-16.2.0.tgz#04ba47c4150555532978453818160666aa3bd8a7"
   dependencies:
@@ -2126,7 +2126,7 @@ watchify-middleware@^1.8.0:
     strip-ansi "^3.0.0"
     watchify "^3.3.1"
 
-watchify@^3.3.1:
+watchify@^3.11.0, watchify@^3.3.1:
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/watchify/-/watchify-3.11.0.tgz#03f1355c643955e7ab8dcbf399f624644221330f"
   dependencies:

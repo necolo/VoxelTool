@@ -21,11 +21,7 @@ export class LeftPanel extends React.Component<props, state> {
 
     public render () {
         return (
-            <div style={{
-                WebkitFlex: 'none',
-                flex: 'none',
-                width: '200px',
-            }}>
+            <div className="left_container">
                 { this.props.ui.state.projects.map((project, index) => 
                     <ListProject
                         key={index}
@@ -52,13 +48,7 @@ class ListProject extends React.Component<ListProp, ListState> {
 
     public render () {
         return (
-            <div style={{
-                padding: '5px',
-                textAlign: 'center',
-                borderBottom: '1px solid grey',
-                width: '100%',
-                height: '20px',
-            }}>
+            <div className="project_item">
                 {this.props.name}
             </div>
         )

@@ -4,7 +4,7 @@ import { UI } from '../client/ui';
 
 import { LeftPanel } from './left';
 import { RightPanel } from './right';
-import { CenterPanel } from './center';
+import { MiddlePanel } from './center';
 
 interface props {
     ui:UI
@@ -17,14 +17,12 @@ interface state {
 export class Container extends React.Component<props, state> {
     public render() {
         return (
-            <div style={{
-                display: 'flex',
-            }}>
+            <div className="container">
                 <LeftPanel 
                     ui={this.props.ui}
                 />
 
-                <CenterPanel
+                <MiddlePanel
                     ui={this.props.ui}
                 />
 

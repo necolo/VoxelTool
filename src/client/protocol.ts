@@ -1,9 +1,8 @@
 import { 
     RequestId, 
-    initRespondListeners, 
-    RespondHandler,
     VoxelSpec, 
     SocketInterface,
+    MessageHandler,
 } from '../spec';
 
 
@@ -11,59 +10,60 @@ export class ClientProtocol {
     public socket:SocketInterface;
     public project:string = 'default';
 
-    public onrespond = initRespondListeners(); 
-
     constructor (socket:SocketInterface) {
         const self = this;
-
         this.socket = socket;
-
-        const onmessage = this.socket.get_onmessage();
-
-        for (let i = 0; i < onmessage.length; i ++) {
-            onmessage[i] = (id, data) => {
-                console.log(self.onrespond);
-                for (let j = 0; j < self.onrespond[i].length; j ++) {
-                    self.onrespond[i][j](data, this.socket);
-                }
-            }
-        }
     }
 
-    public get_category_list (cb:RespondHandler<string[]>) {
+    public get_category_list (cb:MessageHandler<string[]>) {
         const id = RequestId.category_list;
-        const req = this.project;
+        const req = {
+            project: this.project,
+        };
+
+        this.socket.sub(id, cb);
         this.socket.send(id, req);
-        this.onrespond[id].push(cb);
     }
 
-    public add_category(category:string, cb:RespondHandler<boolean>) {
+    public add_category(category:string, cb:MessageHandler<boolean>) {
         const id = RequestId.add_category;
         const req = { project: this.project, category };
+        this.socket.sub(id, cb);
         this.socket.send(id, req);
-        this.onrespond[id].push(cb);
     }
 
-    public add_voxel(spec, cb:RespondHandler<boolean>) {
+    public add_voxel(name:string, spec:VoxelSpec, cb:MessageHandler<boolean>) {
         const id = RequestId.add_voxel;
         const req = {
             project: this.project,
+            name,
             spec,
         }
+        this.socket.sub(id, cb);
         this.socket.send(id, req);
-        this.onrespond[id].push(cb);
     }
 
-    public new_project(project:string, cb:RespondHandler<boolean>) {
+    public new_project(project:string, cb:MessageHandler<boolean>) {
         const id = RequestId.new_project;
+        this.socket.sub(id, cb);
         this.socket.send(id, project);
-        this.onrespond[id].push(cb);
     }
 
-    public get_projects(cb:RespondHandler<string[]>) {
+    public get_projects(cb:MessageHandler<string[]>) {
         const id = RequestId.get_projects;
+        this.socket.sub(id, cb);
         this.socket.send(id, '');
-        this.onrespond[id].push(cb);
-        console.log(this.onrespond);
+    }
+
+    public get_voxel(name:string, cb:MessageHandler<VoxelSpec|false>) {
+        const id = RequestId.get_voxel;
+        this.socket.sub(id, cb);
+
+        const req = {
+            project: this.project,
+            name,
+        };
+
+        this.socket.send(id, req);
     }
 }

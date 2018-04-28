@@ -1,22 +1,30 @@
 import * as React from 'react';
 
-import { TextureSrc, UI } from '../client/ui';
+import { Texture, UI } from '../client/ui';
 
 interface props {
     ui:UI;
-    side:string;
+    face:Texture;
 }
 
 interface state {
-    showimg:boolean;
-    linked:boolean;
+    src:string;
 }
 
 export class TextureBox extends React.Component<props, state> {
+    public selectElement:HTMLSelectElement|null = null;
+
     public state = {
-        showimg: false,
-        linked: false,
+        src: '',
     };
+
+    public componentDidMount() {
+        this.props.ui.textureBoxListeners[this.props.face].subscribe(this);
+    }
+
+    public componentWillUnmount() {
+        this.props.ui.textureBoxListeners[this.props.face].unsubscribe(this);
+    }
 
     public handleDragOver = (ev:React.DragEvent<HTMLDivElement>) => {
         ev.preventDefault();
@@ -32,8 +40,11 @@ export class TextureBox extends React.Component<props, state> {
                 if (file.type === 'image/jpeg' || file.type === 'image/png') {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        this.setState({ showimg: true })
-                        this.props.ui.setTextureSrc(this.props.side, reader.result);
+                        if (this.selectElement) {
+                            this.selectElement.value = 'default';
+                        }
+
+                        this.props.ui.uploadTextureImg(this.props.face, reader.result);
                     };
 
                     reader.readAsDataURL(file);
@@ -43,63 +54,45 @@ export class TextureBox extends React.Component<props, state> {
     }
 
     public handleSelect = (ev) => {
-        const { ui, side } = this.props;
+        const { ui, face } = this.props;
         if (ev.target.value !== 'default') {
-            ui.setTextureSrc(
-                side,
-                ui.state.texture_src[ev.target.value],
-            );
-            this.setState({
-                linked: true,
-                showimg: false,
-            })
+            ui.linkBlockSide(face, Texture[ev.target.value as keyof Texture]);
         } else {
-            this.setState({
-                linked: true,
-            })
+            ui.linkBlockSide(face, face);
         }
     }
 
     public render () {
-        const { side, ui } = this.props;
+        const { face, ui } = this.props;
         return (
-            <div style={{
-                margin: '10px',
-                textAlign: 'center',
-            }}>
-                <select onChange={this.handleSelect}>
-                    <option value="default">default</option>
-                    {side !== 'left' && <option value="left">same to left</option>}
-                    {side !== 'right' && <option value="right">same to right</option>}
-                    {side !== 'top' && <option value="top">same to top</option>}
-                    {side !== 'bottom' && <option value="bottom">same to bottom</option>}
-                    {side !== 'front' && <option value="front">same to front</option>}
-                    {side !== 'back' && <option value="back">same to back</option>}
+            <div className="texture_box">
+                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={ui.state.texture_data[face].name}>
+                    <option value='default'>default</option>
+                    { (new Array(Texture.length)).fill('').map((s, i) => {
+                        if (i !== face) {
+                            return (
+                                <option value={Texture[i]} key={i}>same to {Texture[i]}</option>
+                            )
+                        } else return null;
+                    }) }
                 </select>
-
-                { !this.state.linked &&
-                <div style={{
-                    border: '1px solid black',
-                    width: '100px',
-                    height: '100px',
-                    marginTop: '10px',
-                }}
+                    
+                <div className="box_image"
                     onDragOver={this.handleDragOver}
-                    onDrop={this.handleDrop}
-                >
-                    {this.state.showimg && 
-                        <img src={ui.state.texture_src[side]}></img>
+                    onDrop={this.handleDrop}> 
+                    {ui.state.texture_data[face].src && 
+                        <img src={ui.state.texture_data[face].src || ''}></img>
                     }
 
-                    {!this.state.showimg &&
-                        <span style={{
-
-                        }}>
+                    {!ui.state.texture_data[face].src &&
+                        <span>
                             drag image here
                         </span> 
                     }
-                </div> }
+                </div>
 
+                <br />
+                <span>{ Texture[face] }</span>
             </div> 
         )
     }

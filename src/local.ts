@@ -3,15 +3,16 @@ import createServer = require('./server');
 import { 
     SocketInterface, 
     RequestId, 
-    RespondListenersT, 
     MessageT,
     DBProject,
+    MessageHandler,
 } from './spec';
-import * as ClientProtocol from './client/protocol';
 
 interface SocketHandler {
-    getMessage:MessageT;
-    onmessage:MessageT[];
+    onmessage:MessageHandler<any>[][];
+    sub:(id:number, handler:MessageHandler<any>) => number;
+    notify:(id:number, data:any) => void;
+    unsub:(id:number, index:number) => void;
 }
 
 class SocketHub {
@@ -22,21 +23,26 @@ class SocketHub {
         this.client = this._initHandler('client');
         this.server = this._initHandler('server');
 
-
+        for (let i = 0; i < this.client.onmessage.length; i ++) {
+            this.client.onmessage[i] = [];
+            this.server.onmessage[i] = [];
+        } 
     }
 
-    private _initHandler (_handler:string) : SocketHandler {
-        const self = this;;
+    private _initHandler (target:'client'|'server') : SocketHandler {
         return {
             onmessage: new Array(RequestId.LENGTH),
-
-            getMessage: (id:number, data:any) => {
-                console.log('get message: ', _handler, RequestId[id], data, this[_handler].onmessage);
-                if (typeof this[_handler].onmessage[id] === 'function') {
-                    return this[_handler].onmessage[id](id, data);
-                }
-                return null; 
+            sub: (id:number, handler:MessageHandler<any>) : number => {
+                return this[target].onmessage[id].push(handler);   
             },
+            notify: (id:number, data:any) => {
+                for (let i = 0; i < this[target].onmessage[id].length; i ++) {
+                    this[target].onmessage[id][i](id, data);
+                }
+            },
+            unsub: (id:number, index:number) => {
+                this[target].onmessage[id].splice(index, 1);
+            }, 
         }
     }
 }
@@ -49,11 +55,16 @@ class ClientSocket implements SocketInterface {
     }
 
     public send (id:number, data:any) {
-        this.hub.server.getMessage(id, data);
+        console.log('client send', RequestId[id], data);
+        this.hub.server.notify(id, data);
     }
 
-    public get_onmessage () : MessageT[] {
-        return this.hub.client.onmessage;
+    public sub (id:number, handler:MessageHandler<any>) : number {
+        return this.hub.client.sub(id, handler);
+    }
+
+    public unsub (id:number, index:number) {
+        this.hub.client.unsub(id, index);
     }
 }
 
@@ -65,11 +76,15 @@ class ServerSocket implements SocketInterface {
     }
 
     public send (id:number, data:any) {
-        this.hub.client.getMessage(id, data);
+        this.hub.client.notify(id, data);
     }
 
-    public get_onmessage () : MessageT[] {
-        return this.hub.server.onmessage;
+    public sub (id:number, handler:MessageHandler<any>) : number {
+        return this.hub.server.sub(id, handler);
+    }
+
+    public unsub (id:number, index:number) {
+        this.hub.server.unsub(id, index);
     }
 }
 
@@ -77,6 +92,7 @@ class DB {
     public data:{project: {[projecet:string]:DBProject}};
     
     private _value:any = null;
+    private _should_reset:boolean = false;
 
     constructor () {
         this.data = {
@@ -93,29 +109,32 @@ class DB {
     public get(msg:string) {
         console.log('get: ', msg);
         const props = msg.split('.');
+        this._initValue();
         this._value = this._getValue(props, this.data, 0);
         return this;
     } 
 
     public value() {
         console.log('value: ', this._value);
-        this._value = this.data;
+        this._should_reset = true;
         return this._value;
     }
 
     public push(obj) {
         console.log('push: ', obj);
+        this._initValue();
         this._value.push(obj);
         return this;
     } 
 
     public write() {
-        this._value = this.data;
+        this._should_reset = true;
         return this;        
     }
 
     public set(msg:string, data:any) {
         console.log('set: ', msg, data);
+        this._initValue();
         const props = msg.split('.');
         const setValue = props.pop();
         const obj = this._getValue(props, this._value, 0);
@@ -123,6 +142,13 @@ class DB {
             obj[setValue] = data; 
         }
         return this;
+    }
+    
+    private _initValue () {
+        if (this._should_reset) {
+            this._value = this.data;
+            this._should_reset = false;
+        }
     }
 
     private _getValue (props, obj, i) {

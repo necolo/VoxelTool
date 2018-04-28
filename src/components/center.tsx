@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { TextureSrc, UI, SIDES } from '../client/ui';
+import { Texture, UI } from '../client/ui';
 
 import { TextureBox } from './texture-box';
 
@@ -9,34 +9,42 @@ interface props {
 }
 
 interface state {
-    texture_type:number
 }
 
-export class CenterPanel extends React.Component<props, state> {
+export class MiddlePanel extends React.Component<props, state> {
     public render () {
         return (
-           <div style={{
-                WebkitFlex: 2,
-                flex: 2,
-                textAlign: 'center',
-           }}>
-                <canvas width={600} height={600} style={{
-                    border: '1px solid black',
-                }}></canvas>
+           <div className="middle_container">
+                <canvas width={600} height={600}></canvas>
 
-                <div style={{
-                    display: "flex",
-                    textAlign: 'center',
-                }}>
-                    { SIDES.map((side, index) => 
-                        <TextureBox 
-                            key={index}
-                            ui={this.props.ui}
-                            side={side}
-                        />
+                <div className="texture_box_container">
+
+                    { (new Array(Texture.length)).fill('').map((s, i) => 
+                    <TextureBox
+                        key={i}
+                        ui={this.props.ui}
+                        face={i}
+                    />    
                     )}
+
                 </div>
+
+                <button onClick={this.handleAllToSame}>all same as left</button>
            </div> 
         )
+    }
+
+    public handleAllToSame = (ev) => {
+        const ui = this.props.ui;
+
+        ui.state.texture_data[0].linked = [1, 2, 3, 4, 5];
+        for (let i = 1; i < Texture.length; i ++) {
+            ui.state.texture_data[i].name = 'left';
+            ui.state.texture_data[i].src = ui.state.texture_data[0].src;
+        }
+        
+        for (let listener of ui.textureBoxListeners) {
+            listener.notify();
+        }
     }
 }
