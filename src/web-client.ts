@@ -9,14 +9,11 @@ export const ws = new WebSocket(
 
 
 export class ClientSocket implements SocketInterface{
-    public onmessage:MessageHandler<any>[][];
+    public onmessage:MessageHandler<any>[];
 
     constructor () {
         const self = this;
         this.onmessage = new Array(RequestId.LENGTH);
-        for (let i = 0; i < this.onmessage.length; i++) {
-            this.onmessage[i] = [];
-        }
 
         ws.on('message', (msg) => {
             const { id, data } = JSON.parse(msg);
@@ -33,12 +30,12 @@ export class ClientSocket implements SocketInterface{
         }));
     }
 
-    public sub (id:number, handler:MessageHandler<any>) : number {
-        return this.onmessage[id].push(handler);
+    public sub (id:number, handler:MessageHandler<any>) {
+        this.onmessage[id] = handler;
     }
 
     public unsub (id:number, index:number) {
-        this.onmessage[id].splice(index, 1);
+        this.onmessage[id] = () => {};
     }
 }
 

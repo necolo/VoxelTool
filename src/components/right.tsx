@@ -202,7 +202,6 @@ export class RightPanel extends React.Component<props, state> {
                     alert('error: save failed')
                 }
             })
-
         })
     }
 

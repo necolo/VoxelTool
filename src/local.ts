@@ -9,8 +9,8 @@ import {
 } from './spec';
 
 interface SocketHandler {
-    onmessage:MessageHandler<any>[][];
-    sub:(id:number, handler:MessageHandler<any>) => number;
+    onmessage:MessageHandler<any>[];
+    sub:(id:number, handler:MessageHandler<any>) => void;
     notify:(id:number, data:any) => void;
     unsub:(id:number, index:number) => void;
 }
@@ -22,26 +22,19 @@ class SocketHub {
     constructor () {
         this.client = this._initHandler('client');
         this.server = this._initHandler('server');
-
-        for (let i = 0; i < this.client.onmessage.length; i ++) {
-            this.client.onmessage[i] = [];
-            this.server.onmessage[i] = [];
-        } 
     }
 
     private _initHandler (target:'client'|'server') : SocketHandler {
         return {
             onmessage: new Array(RequestId.LENGTH),
-            sub: (id:number, handler:MessageHandler<any>) : number => {
-                return this[target].onmessage[id].push(handler);   
+            sub: (id:number, handler:MessageHandler<any>) => {
+                this[target].onmessage[id] = handler;   
             },
             notify: (id:number, data:any) => {
-                for (let i = 0; i < this[target].onmessage[id].length; i ++) {
-                    this[target].onmessage[id][i](id, data);
-                }
+                this[target].onmessage[id](id, data);
             },
             unsub: (id:number, index:number) => {
-                this[target].onmessage[id].splice(index, 1);
+                this[target].onmessage[id] = () => {}; 
             }, 
         }
     }
@@ -55,15 +48,11 @@ class ClientSocket implements SocketInterface {
     }
 
     public send (id:number, data:any) {
-        console.log('client send', RequestId[id], data);
         this.hub.server.notify(id, data);
     }
 
     public sub (id:number, handler:MessageHandler<any>) {
-        const subid = this.hub.client.sub(id, (id, data) => {
-            handler(id, data);
-            this.unsub(id, subid);
-        })
+        this.hub.client.sub(id, handler);
     }
 
     public unsub (id:number, index:number) {
@@ -83,10 +72,7 @@ class ServerSocket implements SocketInterface {
     }
 
     public sub (id:number, handler:MessageHandler<any>) {
-        const subid =  this.hub.server.sub(id, (id, data) => {
-            handler(id, data);
-            this.unsub(id, subid);
-        });
+        this.hub.server.sub(id, handler);
     }
 
     public unsub (id:number, index:number) {

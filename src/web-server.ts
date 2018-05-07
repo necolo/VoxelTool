@@ -11,14 +11,11 @@ import {
 const wss = new WebSocketServer({port: 8002});
 
 export class ServerSocket implements SocketInterface {
-    public onmessage:MessageHandler<any>[][];
+    public onmessage:MessageHandler<any>[];
 
     constructor () {
         const self = this;
         this.onmessage = new Array(RequestId.LENGTH);
-        for (let i = 0; i < this.onmessage.length; i ++) {
-            this.onmessage[i] = [];
-        }
 
         wss.on('connection', function (ws) {
             ws.on('message', (msg) => {
@@ -37,12 +34,12 @@ export class ServerSocket implements SocketInterface {
         }))
     }
 
-    public sub (id:number, handler:MessageHandler<any>) : number {
-        return this.onmessage[id].push(handler);
+    public sub (id:number, handler:MessageHandler<any>) {
+        this.onmessage[id] = handler;
     }
 
     public unsub (id:number, index:number) {
-        this.onmessage[id].splice(index, 1);
+        this.onmessage[id] = () => {}; 
     }
 }
 
