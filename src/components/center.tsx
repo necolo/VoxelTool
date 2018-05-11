@@ -26,7 +26,7 @@ export class MiddlePanel extends React.Component<props, state> {
         }
 
         const cube = DrawCube(this.canvasElement);
-        this.props.ui.setGlCube(cube)
+        this.props.ui.glCube = cube;
         cube.empty();
     }
 
@@ -46,8 +46,6 @@ export class MiddlePanel extends React.Component<props, state> {
                     )}
 
                 </div>
-
-                <button onClick={this.handleAllToSame}>all same as left</button>
            </div> 
         )
     }

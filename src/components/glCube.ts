@@ -159,15 +159,16 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 } 
                 `,
                 uniforms: {
-                    cube: regl.props('cube'),
+                    cube: regl.prop('cube'),
                 }
             });
 
             const faces:HTMLImageElement[] = new Array(6);
             // posX, negX, posY, negY, posZ, negZ
 
-            for (let face of faces) {
-                face = new Image();
+            for (let i = 0; i < faces.length; i ++) {
+                faces[i] = new Image();
+                faces[i].onload = run;
             }
 
             faces[0].src = spec[Texture.right];
@@ -176,12 +177,18 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             faces[3].src = spec[Texture.bottom];
             faces[4].src = spec[Texture.front];
             faces[5].src = spec[Texture.back];
+            
+            let count = 0;
 
-            faces[5].onload = () => {
-                process = () => basicCube(undefined, () => drawCube({
-                    cube: regl.cube(...faces)
-                }))
-            };
+            function run () {
+                if (count < 5) {
+                    count ++;
+                } else {
+                    process = () => basicCube(undefined, () => drawCube({
+                        cube: regl.cube(...faces)
+                    }))
+                }
+            }
         },
     }
 }

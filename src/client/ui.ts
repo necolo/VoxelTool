@@ -70,21 +70,41 @@ export class UI {
         })
     }
 
-    public setGlCube(cube) {
-        this.glCube = cube;
-    }
-
     public uploadTextureImg(face:Texture, imgsrc:string) {
         const self = this;
-        const texture = this.state.texture_data[face];
-        texture.name = Texture[face];
-        texture.src = imgsrc;
-        this.textureBoxListeners[face].notify();
-        _update_linked_faces(texture, imgsrc, texture.name);
- 
-        if (this.webgl) {
-            this.webgl.run(imgsrc);
+        const texs = this.state.texture_data;
+
+        const noneTexUploaded = checkValue('src', '', texs);
+        if (noneTexUploaded) {
+            for (let i = 0; i < texs.length; i ++) {
+                const tex = texs[i];
+                tex.name = Texture[face];
+                tex.src = imgsrc;
+                this.textureBoxListeners[i].notify();
+            }
+
+            const links = [0, 1, 2, 3, 4, 5];
+            links.splice(face, 1);
+            texs[face].linked = links;
+        } else {
+            const texture = texs[face];
+            texture.name = Texture[face];
+            texture.src = imgsrc;
+            this.textureBoxListeners[face].notify();
+
+            // the linked faces should also be updated
+            _update_linked_faces(texture, imgsrc, texture.name);
+
+            // now this face is not linked to any other faces
+            for (let i = 0; i < texs.length; i ++) {
+                const linkIndex = texs[i].linked.indexOf(face);
+                if (linkIndex > -1) {
+                    texs[i].linked.splice(linkIndex, 1);
+                }
+            }
         }
+
+        this.updateGL();
 
         function _update_linked_faces(_texture:TextureData, src:string, name:string) {
             for (let i = 0; i < _texture.linked.length; i ++) {
@@ -95,6 +115,15 @@ export class UI {
                 _update_linked_faces(linked_texture, src, name);
             }
         }
+    }
+
+    public updateGL () {
+        const glSpec = {};
+        for (let i = 0; i < Texture.length; i ++) {
+            glSpec[i] = this.state.texture_data[i].src;
+        }
+
+        this.glCube.texture(glSpec);
     }
 
     public setProject(project:string) {
@@ -115,6 +144,7 @@ export class UI {
         texture.name = Texture[link];
         texture.src = linked_texture.src; 
         linked_texture.linked.push(face);
+        this.updateGL();
         this.textureBoxListeners[face].notify();
     }
 
@@ -141,4 +171,17 @@ export class UI {
             listener.notify();
         }
     }
+}
+
+function checkValue (param:string, value:any, list:{}[]) : boolean {
+    let res:boolean = true;
+
+    for (let i = 0; i < list.length; i ++) {
+        if (list[i][param] !== value) {
+            res = false;
+            break;
+        }
+    } 
+
+    return res;
 }
