@@ -8,4 +8,3 @@ export const db = low(adapter);
 
 
 db.defaults({ project: {} }).write();
-

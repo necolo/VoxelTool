@@ -3,6 +3,7 @@ import {
     VoxelSpec, 
     SocketInterface,
     MessageHandler,
+    DBProject,
 } from '../spec';
 
 export class ServerProtocol {
@@ -36,8 +37,11 @@ export class ServerProtocol {
             this.socket.send(id, true);
         });
 
-        this.socket.sub(RequestId.new_project, (id, req) => {
-
+        this.socket.sub(RequestId.new_project, (id, req:{project:string}) => {
+            console.log('new project', req);
+            db.set(`project.${req.project}`, this.allocProject())
+            .write()
+            .then(() => this.socket.send(id, true));
         });
 
         this.socket.sub(RequestId.download_project, (id, req) => {
@@ -57,5 +61,13 @@ export class ServerProtocol {
                 this.socket.send(id, false);
             }
         })
+    }
+
+    public allocProject () : DBProject {
+        return {
+            categoryList: [],
+            voxelSpec: {},
+            id_count: 0,
+        }
     }
 }

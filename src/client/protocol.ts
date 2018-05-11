@@ -45,8 +45,11 @@ export class ClientProtocol {
 
     public new_project(project:string, cb:MessageHandler<boolean>) {
         const id = RequestId.new_project;
+        const req = {
+            project,
+        };
         this.socket.sub(id, cb);
-        this.socket.send(id, project);
+        this.socket.send(id, req);
     }
 
     public get_projects(cb:MessageHandler<string[]>) {

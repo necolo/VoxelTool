@@ -1,5 +1,6 @@
 import { UIListener } from './uiListener';
 import { ClientProtocol } from './protocol';
+import { Webgl } from '../components/webgl';
 
 export enum Texture {
     left,
@@ -21,7 +22,7 @@ export enum Thumbnail {
 export interface UIState {
     categoryList:string[];
     projects:string[];
-    in_project:string;
+    inProject:string;
     texture_data:TextureData[];
     category:string;
 }
@@ -40,10 +41,12 @@ export class UI {
 
     public protocol:ClientProtocol;
 
+    public webgl:Webgl|undefined = undefined;
+
     public state:UIState = {
         categoryList: [],
         projects: [],
-        in_project: 'default',
+        inProject: 'default',
         texture_data: [],
         category: '',
     }
@@ -58,20 +61,32 @@ export class UI {
 
         (window as any).ui = this;
 
+        this.update_projects();
+    }
+
+    public setWebgl(webgl:Webgl) {
+        this.webgl = webgl;
+    }
+
+    public update_projects() {
         this.protocol.get_projects((id, projects) => {
             this.state.projects = projects;
             this.leftPanelListener.notify();
         })
     }
 
-    public uploadTextureImg(face:Texture, img:string) {
+    public uploadTextureImg(face:Texture, imgsrc:string) {
         const self = this;
         const texture = this.state.texture_data[face];
         texture.name = Texture[face];
-        texture.src = img;
+        texture.src = imgsrc;
         this.textureBoxListeners[face].notify();
-        _update_linked_faces(texture, img, texture.name);
+        _update_linked_faces(texture, imgsrc, texture.name);
  
+        if (this.webgl) {
+            this.webgl.run(imgsrc);
+        }
+
         function _update_linked_faces(_texture:TextureData, src:string, name:string) {
             for (let i = 0; i < _texture.linked.length; i ++) {
                 const linked_face = _texture.linked[i];
@@ -84,7 +99,9 @@ export class UI {
     }
 
     public setProject(project:string) {
-        this.state.in_project = project;
+        this.state.inProject = project;
+        this.leftPanelListener.notify();
+
         this.protocol.project = project;
         this.protocol.get_category_list((id, categoryList) => {
             this.state.categoryList = categoryList;

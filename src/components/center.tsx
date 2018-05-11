@@ -3,6 +3,8 @@ import * as React from 'react';
 import { Texture, UI } from '../client/ui';
 
 import { TextureBox } from './texture-box';
+import { Webgl } from './webgl';
+import cube = require('./glCube');
 
 interface props {
     ui:UI;
@@ -12,10 +14,27 @@ interface state {
 }
 
 export class MiddlePanel extends React.Component<props, state> {
+    public canvasElement:HTMLCanvasElement|null = null;
+
+    public componentDidMount() {
+        if (!this.canvasElement) { return; }
+
+        const gl = this.canvasElement.getContext('webgl');
+        if (!gl) {
+            alert("your browser not support WebGL");
+            return;
+        }
+
+        // const webgl = new Webgl(gl);
+        // this.props.ui.setWebgl(webgl);
+        // webgl.run();
+        cube(this.canvasElement);
+    }
+
     public render () {
         return (
            <div className="middle_container">
-                <canvas width={600} height={600}></canvas>
+                <canvas width={600} height={600} ref={(e) => this.canvasElement = e}></canvas>
 
                 <div className="texture_box_container">
 

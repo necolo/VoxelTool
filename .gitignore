@@ -2,4 +2,6 @@ node_modules
 yarn-error.log
 build
 bundle.js
+./*.png
+./*.jpg
 

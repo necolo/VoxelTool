@@ -7,10 +7,14 @@ interface props {
 }
 
 interface state {
-
+    add_project:string;
 }
 
 export class LeftPanel extends React.Component<props, state> {
+    public state = {
+        add_project: '',
+    }
+
     public componentDidMount() {
         this.props.ui.leftPanelListener.subscribe(this);
     }
@@ -26,15 +30,43 @@ export class LeftPanel extends React.Component<props, state> {
                     <ListProject
                         key={index}
                         name={project}
+                        ui={this.props.ui}
                     />
                 )}
+
+                <div className="add_project">
+                    <input type="text"
+                        value={this.state.add_project}
+                        onChange={(ev) => this.setState({add_project: ev.target.value})}
+                        onKeyDown={(ev) => {
+                            if (ev.keyCode === 13) {
+                                this.handleAddProject(ev);
+                            }
+                        }}
+                    />
+                    <button onClick={this.handleAddProject}>add project</button>
+                </div>
             </div>
         )
+    }
+
+    public handleAddProject = (ev) => {
+        this.props.ui.protocol.new_project(this.state.add_project, (id, success) => {
+            if (success) {
+                this.props.ui.update_projects();
+                this.setState({
+                    add_project: '',
+                })
+            } else {
+                alert('add project failed');
+            }
+        })
     }
 }
 
 interface ListProp {
     name:string;
+    ui:UI;
 }
 
 interface ListState {
@@ -42,15 +74,21 @@ interface ListState {
 }
 
 class ListProject extends React.Component<ListProp, ListState> {
-    public state = {
-        selected: false,
-    }
+    public element:HTMLButtonElement|null = null;
 
     public render () {
+        const selected = this.props.ui.state.inProject === this.props.name;
         return (
-            <div className="project_item">
+            <button className={selected ? 'project_item_selected' : 'project_item'}
+                onClick={this.handleClick} 
+                ref={(e) => this.element = e}
+            >
                 {this.props.name}
-            </div>
+            </button>
         )
+    }
+
+    public handleClick = (ev) => {
+        this.props.ui.setProject(this.props.name);
     }
 }

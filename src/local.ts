@@ -135,6 +135,10 @@ class DB {
         }
         return this;
     }
+
+    public then(cb:() => void) {
+        cb();
+    }
     
     private _initValue () {
         if (this._should_reset) {

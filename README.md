@@ -7,3 +7,6 @@ todo:
 further：
 - 读取服务器所有voxel
 - 选择voxel修改信息
+
+# webgl steps
+
