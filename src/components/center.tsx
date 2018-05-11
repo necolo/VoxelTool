@@ -1,10 +1,9 @@
 import * as React from 'react';
 
 import { Texture, UI } from '../client/ui';
+import DrawCube = require('../client/glCube');
 
 import { TextureBox } from './texture-box';
-import { Webgl } from './webgl';
-import DrawCube = require('./glCube');
 
 interface props {
     ui:UI;

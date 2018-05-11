@@ -1,7 +1,8 @@
 todo:
 
 基本功能：
-- canvas 渲染贴图
+- 鼠标操控程序 拖拽：旋转， 滚轮：缩放 
+- 背景天空盒子图片
 - 往服务器存储图片
 
 further：
@@ -10,3 +11,11 @@ further：
 
 # webgl steps
 
+
+# drafts
+
+```js
+
+model: mouse.model(),
+
+```

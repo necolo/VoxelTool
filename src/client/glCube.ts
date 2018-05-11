@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 
-import { Texture } from '../client/ui';
+import { Texture } from './ui';
 
   // cube points
   //    v6----- v5
@@ -36,7 +36,8 @@ type DrawCubeT = {
 
 export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
-    const camera = require('canvas-orbit-camera')(canvas);
+    // const camera = require('canvas-orbit-camera')(canvas);
+
 
     const basicCube = regl({
         attributes: {
@@ -94,7 +95,8 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     0.1,
                     100.0,
                 ),
-            view: () => camera.view(),
+            view: mat4.create(),
+            // view: () => camera.view(),
         }
     })
 
@@ -105,7 +107,7 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             depth: 1,
             color: [0, 0, 0, 1],
         })
-        camera.tick();
+        // camera.tick();
         process();
     })
     
