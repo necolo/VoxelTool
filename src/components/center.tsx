@@ -4,7 +4,7 @@ import { Texture, UI } from '../client/ui';
 
 import { TextureBox } from './texture-box';
 import { Webgl } from './webgl';
-import cube = require('./glCube');
+import DrawCube = require('./glCube');
 
 interface props {
     ui:UI;
@@ -25,10 +25,9 @@ export class MiddlePanel extends React.Component<props, state> {
             return;
         }
 
-        // const webgl = new Webgl(gl);
-        // this.props.ui.setWebgl(webgl);
-        // webgl.run();
-        cube(this.canvasElement);
+        const cube = DrawCube(this.canvasElement);
+        this.props.ui.setGlCube(cube)
+        cube.empty();
     }
 
     public render () {

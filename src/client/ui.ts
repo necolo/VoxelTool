@@ -1,6 +1,5 @@
 import { UIListener } from './uiListener';
 import { ClientProtocol } from './protocol';
-import { Webgl } from '../components/webgl';
 
 export enum Texture {
     left,
@@ -40,8 +39,7 @@ export class UI {
     public categoryListener = new UIListener();
 
     public protocol:ClientProtocol;
-
-    public webgl:Webgl|undefined = undefined;
+    public glCube:any;
 
     public state:UIState = {
         categoryList: [],
@@ -64,15 +62,16 @@ export class UI {
         this.update_projects();
     }
 
-    public setWebgl(webgl:Webgl) {
-        this.webgl = webgl;
-    }
 
     public update_projects() {
         this.protocol.get_projects((id, projects) => {
             this.state.projects = projects;
             this.leftPanelListener.notify();
         })
+    }
+
+    public setGlCube(cube) {
+        this.glCube = cube;
     }
 
     public uploadTextureImg(face:Texture, imgsrc:string) {

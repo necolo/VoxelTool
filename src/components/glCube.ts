@@ -1,6 +1,8 @@
 import { mat4 } from 'gl-matrix';
 
-  // Create a cube
+import { Texture } from '../client/ui';
+
+  // cube points
   //    v6----- v5
   //   /|      /|
   //  v1------v0|
@@ -27,35 +29,16 @@ const TEXTURE_COOR:[number, number][] = [
     [1.0, 0.0],
 ]
 
-export = function (canvas:HTMLCanvasElement, texture?:string) {
+type DrawCubeT = {
+    empty: () => void,
+    texture: (spec:{[face:number]:string}) => void,  
+}
+
+export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
     const camera = require('canvas-orbit-camera')(canvas);
 
-    const drawCube = regl({
-        vert: `
-        attribute vec3 position, color;
-        uniform mat4 model, projection, view;
-        varying vec4 v_color;
-        varying vec3 v_textureCoor;
-    
-        void main() {
-          v_color = vec4(color, 1.0);
-          v_textureCoor = position;
-          gl_Position = projection * view * model * vec4(position, 1.);
-        }
-        `,
-
-        frag: `
-        precision mediump float;
-        uniform samplerCube cube; 
-        varying vec4 v_color;
-        varying highp vec3 v_textureCoor;
-
-        void main() {
-            gl_FragColor = textureCube(cube, v_textureCoor);
-        } 
-        `,
-
+    const basicCube = regl({
         attributes: {
             position: insertArray(POSITION, [
                 0, 1, 2, 3,
@@ -82,8 +65,20 @@ export = function (canvas:HTMLCanvasElement, texture?:string) {
                 0, 3, 2, 1,
             ]),
         },
-
         uniforms: {
+            model: regl.context('model'),
+            projection: regl.context('projection'),
+            view: regl.context('view'),
+        },
+        elements: [
+            0, 1, 2,   0, 2, 3,    // front
+            4, 5, 6,   4, 6, 7,    // right
+            8, 9,10,   8,10,11,    // up
+           12,13,14,  12,14,15,    // left
+           16,17,18,  16,18,19,    // down
+           20,21,22,  20,22,23     // back  
+        ],
+        context: {
             model: ({tick}) => {
                 let m = mat4.create();
                 const t = tick * 0.01;
@@ -100,48 +95,94 @@ export = function (canvas:HTMLCanvasElement, texture?:string) {
                     100.0,
                 ),
             view: () => camera.view(),
-            cube: regl.prop('cube'),
-        },
-
-        elements: [
-            0, 1, 2,   0, 2, 3,    // front
-            4, 5, 6,   4, 6, 7,    // right
-            8, 9,10,   8,10,11,    // up
-           12,13,14,  12,14,15,    // left
-           16,17,18,  16,18,19,    // down
-           20,21,22,  20,22,23     // back            
-        ],
+        }
     })
-    
-    const posX = new Image();
-    posX.onload = function() {
-        regl.frame(() => {
-            clear();
-            camera.tick();
-            drawCube({
-                cube: regl.cube(
-                    posX,
-                    posX,
-                    posX,
-                    posX,
-                    posX,
-                    posX, 
-                )
-            })
-        })
-    }
-    posX.src = './grass_side.png';
-    const negX = new Image();
-    const posY = new Image();
-    const negY = new Image();
-    const posZ = new Image();
-    const negZ = new Image();
 
-    function clear() {
+    let process:() => void = () => {}; 
+
+    regl.frame(() => {
         regl.clear({
             depth: 1,
             color: [0, 0, 0, 1],
-        });
+        })
+        camera.tick();
+        process();
+    })
+    
+    return {
+        empty: () => {
+            const drawCube = regl({
+                vert: `
+                attribute vec3 position, color;
+                uniform mat4 model, projection, view;
+                varying vec4 v_color;
+            
+                void main() {
+                  v_color = vec4(color, 1.0);
+                  gl_Position = projection * view * model * vec4(position, 1.);
+                }   
+                `,
+                frag: `
+                precision mediump float;
+                varying vec4 v_color;
+
+                void main() {
+                    gl_FragColor = v_color;
+                } 
+                `,
+            });
+
+            process = () => basicCube(undefined, () => drawCube());
+        },
+        texture: (spec) => {
+            const drawCube = regl({
+                vert: `
+                attribute vec3 position, color;
+                uniform mat4 model, projection, view;
+                varying vec4 v_color;
+                varying vec3 v_textureCoor;
+            
+                void main() {
+                  v_color = vec4(color, 1.0);
+                  v_textureCoor = position;
+                  gl_Position = projection * view * model * vec4(position, 1.);
+                }
+                `,
+                frag: `
+                precision mediump float;
+                uniform samplerCube cube; 
+                varying vec4 v_color;
+                varying highp vec3 v_textureCoor;
+        
+                void main() {
+                    gl_FragColor = textureCube(cube, v_textureCoor);
+                } 
+                `,
+                uniforms: {
+                    cube: regl.props('cube'),
+                }
+            });
+
+            const faces:HTMLImageElement[] = new Array(6);
+            // posX, negX, posY, negY, posZ, negZ
+
+            for (let face of faces) {
+                face = new Image();
+            }
+
+            faces[0].src = spec[Texture.right];
+            faces[1].src = spec[Texture.left];
+            faces[2].src = spec[Texture.top];
+            faces[3].src = spec[Texture.bottom];
+            faces[4].src = spec[Texture.front];
+            faces[5].src = spec[Texture.back];
+
+            faces[5].onload = () => {
+                process = () => basicCube(undefined, () => drawCube({
+                    cube: regl.cube(...faces)
+                }))
+            };
+        },
     }
 }
 
