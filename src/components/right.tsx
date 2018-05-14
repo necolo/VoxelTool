@@ -11,7 +11,7 @@ interface state {
     name:string;
     transparent:boolean;
     color:number[];
-    emssive:number[];
+    emissive:number[];
     friction:number,
     restitution:number,
     mass:number,
@@ -24,7 +24,7 @@ export class RightPanel extends React.Component<props, state> {
         name: '',
         transparent: false,
         color: [1, 1, 1, 1],
-        emssive: [0, 0, 0],
+        emissive: [0, 0, 0],
         friction: 1, 
         restitution: 0,
         mass: 1,
@@ -77,8 +77,8 @@ export class RightPanel extends React.Component<props, state> {
                 </div>
 
                 <div className="box">
-                    <span>emssive</span>
-                    { this.renderNumberInputs(3, 'emssive') }
+                    <span>emissive</span>
+                    { this.renderNumberInputs(3, 'emissive') }
                 </div>
 
                 <div className="box">
@@ -179,7 +179,7 @@ export class RightPanel extends React.Component<props, state> {
                 texture,
                 transparent: this.state.transparent,
                 color: this.state.color,
-                emissive: this.state.emssive,
+                emissive: this.state.emissive,
                 friction: this.state.friction,
                 mass: this.state.mass,
                 category: ui.state.category,
@@ -192,7 +192,7 @@ export class RightPanel extends React.Component<props, state> {
                         name: '',
                         transparent: false,
                         color: [1, 1, 1, 1],
-                        emssive: [0, 0, 0],
+                        emissive: [0, 0, 0],
                         friction: 1, 
                         restitution: 0,
                         mass: 1,            

@@ -1,6 +1,7 @@
 import { mat4 } from 'gl-matrix';
 
 import { Texture } from './ui';
+import { glMouse } from './glMouse';
 
   // cube points
   //    v6----- v5
@@ -36,8 +37,7 @@ type DrawCubeT = {
 
 export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
-    // const camera = require('canvas-orbit-camera')(canvas);
-
+    const mouse = glMouse(canvas);
 
     const basicCube = regl({
         attributes: {
@@ -80,13 +80,7 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
            20,21,22,  20,22,23     // back  
         ],
         context: {
-            model: ({tick}) => {
-                let m = mat4.create();
-                const t = tick * 0.01;
-                mat4.translate(m, m, [-0.0, 0.0, -6.0]); 
-                mat4.rotate(m, m, t, [0, 1, 0]);
-                return m;
-            },
+            model: mat4.create(),
             projection: ({viewportWidth, viewportHeight}) => 
                 mat4.perspective(
                     mat4.create(),
@@ -95,8 +89,7 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     0.1,
                     100.0,
                 ),
-            view: mat4.create(),
-            // view: () => camera.view(),
+            view: () => mouse.view(),
         }
     })
 
@@ -107,7 +100,7 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             depth: 1,
             color: [0, 0, 0, 1],
         })
-        // camera.tick();
+        mouse.tick();
         process();
     })
     
