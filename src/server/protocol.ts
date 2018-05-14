@@ -61,6 +61,10 @@ export class ServerProtocol {
                 this.socket.send(id, false);
             }
         })
+
+        this.socket.sub(RequestId.download_project, (id, { project }) => {
+            //todo: 
+        })
     }
 
     public allocProject () : DBProject {

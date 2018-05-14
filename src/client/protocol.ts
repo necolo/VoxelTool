@@ -69,4 +69,15 @@ export class ClientProtocol {
 
         this.socket.send(id, req);
     }
+
+    public download_project(cb:MessageHandler<string>) {
+        const id = RequestId.download_project;
+        this.socket.sub(id, cb);
+
+        const req = {
+            project: this.project,
+        }
+
+        this.socket.send(id, req);
+    }
 }

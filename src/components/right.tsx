@@ -130,8 +130,18 @@ export class RightPanel extends React.Component<props, state> {
                     SAVE
                 </button>
 
+                <button className="btn_save" 
+                    onClick={this.handleDownloadProject}>
+                    Download project
+                </button>
             </div>
         )
+    }
+
+    public handleDownloadProject = (ev) => {
+        this.props.ui.protocol.download_project((id, data) => {
+            //todo:
+        })
     }
 
     public handleSaveVoxel = (ev) => {

@@ -50,6 +50,7 @@ export class LeftPanel extends React.Component<props, state> {
         )
     }
 
+
     public handleAddProject = (ev) => {
         this.props.ui.protocol.new_project(this.state.add_project, (id, success) => {
             if (success) {
