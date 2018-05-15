@@ -180,6 +180,10 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 if (count < 5) {
                     count ++;
                 } else {
+                    if (!allTheSame(faces, ['width', 'height'])) {
+                        alert('the image size is incorrect');
+                        return;
+                    }
                     process = () => basicCube(undefined, () => drawCube({
                         cube: regl.cube(...faces)
                     }))
@@ -195,4 +199,22 @@ function insertArray (insert:number[][], order:number[]) : number[][] {
         res.push(insert[order[i]]);         
     }
     return res;
+}
+
+function allTheSame (compileList:any[], props:string[]) : boolean {
+    const data1 = {};
+    for (let i = 0; i < props.length; i ++) {
+        data1[props[i]] = compileList[0][props[i]];
+    }
+
+    for (let i = 1; i < compileList.length; i ++) {
+        for (let j = 0; j < props.length; j ++) {
+            const name = props[j];
+            if (compileList[i][name] !== data1[name]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
