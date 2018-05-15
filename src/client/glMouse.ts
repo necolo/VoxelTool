@@ -11,8 +11,8 @@ export function glMouse (canvas:HTMLCanvasElement) : MouseT {
 
     let radius = -8;
 
-    let lat = 0;
-    let lon = 0;
+    let lat = -0.3;
+    let lon = -0.72;
 
     let rotate:mat4 = mat4.create();
 

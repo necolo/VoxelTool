@@ -1,7 +1,8 @@
 import * as React from 'react';
 
-import { Texture, UI } from '../client/ui';
+import { UI } from '../client/ui';
 import { glCube } from '../client/glCube';
+import { Face } from '../client/texture';
 
 import { TextureBox } from './texture-box';
 
@@ -36,7 +37,7 @@ export class MiddlePanel extends React.Component<props, state> {
 
                 <div className="texture_box_container">
 
-                    { (new Array(Texture.length)).fill('').map((s, i) => 
+                    { (new Array(Face.length)).fill('').map((s, i) => 
                     <TextureBox
                         key={i}
                         ui={this.props.ui}
@@ -47,19 +48,5 @@ export class MiddlePanel extends React.Component<props, state> {
                 </div>
            </div> 
         )
-    }
-
-    public handleAllToSame = (ev) => {
-        const ui = this.props.ui;
-
-        ui.state.texData[0].linked = [1, 2, 3, 4, 5];
-        for (let i = 1; i < Texture.length; i ++) {
-            ui.state.texData[i].name = 'left';
-            ui.state.texData[i].src = ui.state.texData[0].src;
-        }
-        
-        for (let listener of ui.textureBoxListeners) {
-            listener.notify();
-        }
     }
 }

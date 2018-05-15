@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import { UI, Texture, Thumbnail } from '../client/ui';
+import { UI, Thumbnail, allocTexList } from '../client/ui';
+import { Face } from '../client/texture';
 import { VoxelSpec } from '../spec';
 
 interface props {
@@ -156,12 +157,12 @@ export class RightPanel extends React.Component<props, state> {
             return;
         }
 
-        const { texData } = ui.state;
+        const { texList } = ui.state;
 
-        for (let i = 0; i < texData.length; i ++) {
-            const tex = texData[i];
-            if (!tex.src || !tex.name) {
-                alert(`error: texture ${Texture[i]} not set`);
+        for (let i = 0; i < texList.length; i ++) {
+            const tex = texList[i];
+            if (!tex.texture || !tex.name) {
+                alert(`error: texture ${Face[i]} not set`);
                 return;
             }
         }
@@ -174,14 +175,14 @@ export class RightPanel extends React.Component<props, state> {
             }
 
             const thumbnail:string[] = new Array(Thumbnail.length);
-            const texture:string[] = new Array(Texture.length); 
+            const texture:string[] = new Array(Face.length); 
     
-            for (let i = 0; i < Texture.length; i ++) {
-                texture[i] = `${this.state.name}_${texData[i].name}`;
+            for (let i = 0; i < Face.length; i ++) {
+                texture[i] = `${this.state.name}_${texList[i].name}`;
             }
     
             for (let i = 0; i < Thumbnail.length; i ++) {
-                thumbnail[i] = texture[Texture[Thumbnail[i]]];
+                thumbnail[i] = texture[Face[Thumbnail[i]]];
             }
     
             const spec:VoxelSpec = {
@@ -207,7 +208,7 @@ export class RightPanel extends React.Component<props, state> {
                         restitution: 0,
                         mass: 1,            
                     })
-                    ui.init_texture_data();
+                    ui.state.texList = allocTexList();
                 } else {
                     alert('error: save failed')
                 }

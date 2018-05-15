@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 
-import { Texture } from './ui';
+import { Face } from './texture';
 import { glMouse } from './glMouse';
 
   // cube points
@@ -104,7 +104,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
         mouse.tick();
         process();
     })
-    
+
     return {
         empty: () => {
             const drawCube = regl({
@@ -167,12 +167,12 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 faces[i].onload = run;
             }
 
-            faces[0].src = spec[Texture.right].texture;
-            faces[1].src = spec[Texture.left].texture;
-            faces[2].src = spec[Texture.top].texture;
-            faces[3].src = spec[Texture.bottom].texture;
-            faces[4].src = spec[Texture.front].texture;
-            faces[5].src = spec[Texture.back].texture;
+            faces[0].src = spec[Face.right].texture;
+            faces[1].src = spec[Face.left].texture;
+            faces[2].src = spec[Face.top].texture;
+            faces[3].src = spec[Face.bottom].texture;
+            faces[4].src = spec[Face.front].texture;
+            faces[5].src = spec[Face.back].texture;
             
             let count = 0;
 
