@@ -66,14 +66,6 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down
                 0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back
             ],
-            textureCoor: insertArray(TEXTURE_COOR, [
-                0, 1, 2, 3,
-                3, 0, 1, 2,
-                3, 2, 1, 0,
-                2, 3, 0, 1,
-                1, 2, 3, 0,
-                0, 3, 2, 1,
-            ]),
         },
         uniforms: {
             model: regl.context('model'),

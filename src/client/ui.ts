@@ -24,20 +24,18 @@ export interface UIState {
     categoryList:string[];
     projects:string[];
     inProject:string;
-    textures:TextureData_links[];
-    speculars:TextureData[];
-    normals:TextureData[];
-    emissives:TextureData[];
+    texData:TextureData[];
     category:string;
 }
 
 export interface TextureData {
-    src:string;
-}
+    texture:string;
+    emissive:string;
+    specular:string;
+    normal:string;
 
-export interface TextureData_links extends TextureData{
     name:string;
-    linked:Texture[]
+    linked:Texture[];
 }
 
 export class UI {
@@ -53,21 +51,15 @@ export class UI {
         categoryList: [],
         projects: [],
         inProject: 'default',
-        textures: [],
+        texData: [],
         category: '',
-        speculars: [],
-        normals: [],
-        emissives: [],
     }
 
     constructor(protocol:ClientProtocol) {
         this.protocol = protocol;
         this.textureBoxListeners.fill(new UIListener());
 
-        this.state.textures = new Array(Texture.length);
-        this.state.speculars = new Array(Texture.length);
-        this.state.normals = new Array(Texture.length);
-        this.state.emissives = new Array(Texture.length);
+        this.state.texData = new Array(Texture.length);
         this.init_texture_data();
 
         (window as any).ui = this;
@@ -84,14 +76,14 @@ export class UI {
 
     public uploadTexture(face:Texture, imgsrc:string) {
         const self = this;
-        const texs = this.state.textures;
+        const texs = this.state.texData;
 
-        const noneTexUploaded = checkValue('src', '', texs);
+        const noneTexUploaded = checkValue('texture', '', texs);
         if (noneTexUploaded) {
             for (let i = 0; i < texs.length; i ++) {
                 const tex = texs[i];
                 tex.name = Texture[face];
-                tex.src = imgsrc;
+                tex.texture = imgsrc;
                 this.textureBoxListeners[i].notify();
             }
 
@@ -101,7 +93,7 @@ export class UI {
         } else {
             const texture = texs[face];
             texture.name = Texture[face];
-            texture.src = imgsrc;
+            texture.texture = imgsrc;
             this.textureBoxListeners[face].notify();
 
             // the linked faces should also be updated
@@ -118,11 +110,11 @@ export class UI {
 
         this.updateGL();
 
-        function _update_linked_faces(_texture:TextureData_links, src:string, name:string) {
+        function _update_linked_faces(_texture:TextureData, src:string, name:string) {
             for (let i = 0; i < _texture.linked.length; i ++) {
                 const linked_face = _texture.linked[i];
-                const linked_texture = self.state.textures[linked_face];
-                linked_texture.src = src;
+                const linked_texture = self.state.texData[linked_face];
+                linked_texture.texture = src;
                 self.textureBoxListeners[linked_face].notify();
                 _update_linked_faces(linked_texture, src, name);
             }
@@ -139,7 +131,7 @@ export class UI {
                 emissive: '',
                 specular: '',
             };
-            glSpec[i].texture = this.state.textures[i].src;
+            glSpec[i].texture = this.state.texData[i].texture;
         }
 
         this.glCube.texture(glSpec);
@@ -158,10 +150,10 @@ export class UI {
 
     public linkBlockSide (face:Texture, link:Texture) {
         const self = this;
-        const texture = this.state.textures[face];
-        const linked_texture = this.state.textures[link];
+        const texture = this.state.texData[face];
+        const linked_texture = this.state.texData[link];
         texture.name = Texture[link];
-        texture.src = linked_texture.src; 
+        texture.texture = linked_texture.texture; 
         linked_texture.linked.push(face);
         this.updateGL();
         this.textureBoxListeners[face].notify();
@@ -180,15 +172,14 @@ export class UI {
 
     public init_texture_data () {
         for (let i = 0; i < Texture.length; i ++) {
-            this.state.textures[i] = {
-                src: '',
+            this.state.texData[i] = {
+                texture: '',
+                emissive: '',
+                specular: '',
+                normal: '',
                 name: '',
                 linked: [],
             }
-
-            this.state.speculars[i] = {src: ''};
-            this.state.normals[i] = {src: ''};
-            this.state.emissives[i] = {src: ''};
         }
         for (let listener of this.textureBoxListeners) {
             listener.notify();

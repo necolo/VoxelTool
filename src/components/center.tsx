@@ -52,10 +52,10 @@ export class MiddlePanel extends React.Component<props, state> {
     public handleAllToSame = (ev) => {
         const ui = this.props.ui;
 
-        ui.state.textures[0].linked = [1, 2, 3, 4, 5];
+        ui.state.texData[0].linked = [1, 2, 3, 4, 5];
         for (let i = 1; i < Texture.length; i ++) {
-            ui.state.textures[i].name = 'left';
-            ui.state.textures[i].src = ui.state.textures[0].src;
+            ui.state.texData[i].name = 'left';
+            ui.state.texData[i].src = ui.state.texData[0].src;
         }
         
         for (let listener of ui.textureBoxListeners) {

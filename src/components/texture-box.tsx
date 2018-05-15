@@ -48,7 +48,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.speculars[face].src = src;
+            ui.state.texData[face].specular = src;
             this.forceUpdate();
         })
     }
@@ -57,7 +57,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.normals[face].src = src;
+            ui.state.texData[face].specular = src;
             this.forceUpdate();
         })
     } 
@@ -66,7 +66,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.emissives[face].src = src;
+            ui.state.texData[face].emissive = src;
             this.forceUpdate();
         })
     }
@@ -82,10 +82,10 @@ export class TextureBox extends React.Component<props, state> {
 
     public render () {
         const { face, ui } = this.props;
-        const { textures, speculars, normals, emissives } = ui.state;
+        const { texData } = ui.state;
         return (
             <div className="texture_box">
-                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={textures[face].name}>
+                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={texData[face].name}>
                     <option value='default'>default</option>
                     { (new Array(Texture.length)).fill('').map((s, i) => {
                         if (i !== face) {
@@ -101,27 +101,27 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropTexture}> 
-                    {textures[face].src && 
-                        <img src={textures[face].src || ''}></img>
+                    {texData[face].texture && 
+                        <img src={texData[face].texture || ''}></img>
                     }
 
-                    {!textures[face].src &&
+                    {!texData[face].texture &&
                         <span>
                             texture
                         </span> 
                     }
                 </div>
 
-                {textures[face].src && textures[face].name === Texture[face] &&
+                {texData[face].texture && texData[face].name === Texture[face] &&
                 <div>
                     <div className="box_image"
                         onDragOver={this.handleDragOver}
                         onDrop={this.handleDropSpecular}> 
-                    {speculars[face].src && 
-                        <img src={speculars[face].src || ''}></img>
+                    {texData[face].specular && 
+                        <img src={texData[face].specular || ''}></img>
                     }
 
-                    {!speculars[face].src &&
+                    {!texData[face].specular &&
                         <span>
                             specular
                         </span> 
@@ -131,11 +131,11 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropNormal}> 
-                    {normals[face].src && 
-                        <img src={normals[face].src || ''}></img>
+                    {texData[face].normal && 
+                        <img src={texData[face].normal || ''}></img>
                     }
 
-                    {!normals[face].src &&
+                    {!texData[face].normal &&
                         <span>
                             normal
                         </span> 
@@ -145,11 +145,11 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropEmissive}> 
-                    {emissives[face].src && 
-                        <img src={emissives[face].src || ''}></img>
+                    {texData[face].emissive && 
+                        <img src={texData[face].emissive || ''}></img>
                     }
 
-                    {!emissives[face].src &&
+                    {!texData[face].emissive &&
                         <span>
                             emissive
                         </span> 
