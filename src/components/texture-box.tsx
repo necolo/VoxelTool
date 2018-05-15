@@ -30,27 +30,45 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
     }
 
-    public handleDrop = (ev:React.DragEvent<HTMLDivElement>) => {
+    public handleDropTexture = (ev:React.DragEvent<HTMLDivElement>) => {
         ev.preventDefault();
-        if (ev.dataTransfer.items && ev.dataTransfer.items.length === 1) {
-            const item = ev.dataTransfer.items[0];
-            if (item.kind === 'file') {
-                const file = item.getAsFile();
-                if (!file) { return; }
-                if (file.type === 'image/jpeg' || file.type === 'image/png') {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        if (this.selectElement) {
-                            this.selectElement.value = 'default';
-                        }
 
-                        this.props.ui.uploadTextureImg(this.props.face, reader.result);
-                    };
-
-                    reader.readAsDataURL(file);
-                }
+        const { ui, face } = this.props;
+        loadDropedImage(ev, (src) => {
+            if (this.selectElement) {
+                this.selectElement.value = 'default';
             }
-        }
+
+            ui.uploadTexture(face, src);
+        })
+    }
+
+
+    public handleDropSpecular = (ev:React.DragEvent<HTMLDivElement>) => {
+        ev.preventDefault();
+        const { ui, face } = this.props;
+        loadDropedImage(ev, (src) => {
+            ui.state.speculars[face].src = src;
+            this.forceUpdate();
+        })
+    }
+
+    public handleDropNormal = (ev:React.DragEvent<HTMLDivElement>) => {
+        ev.preventDefault();
+        const { ui, face } = this.props;
+        loadDropedImage(ev, (src) => {
+            ui.state.normals[face].src = src;
+            this.forceUpdate();
+        })
+    } 
+
+    public handleDropEmissive = (ev:React.DragEvent<HTMLDivElement>) => {
+        ev.preventDefault();
+        const { ui, face } = this.props;
+        loadDropedImage(ev, (src) => {
+            ui.state.emissives[face].src = src;
+            this.forceUpdate();
+        })
     }
 
     public handleSelect = (ev) => {
@@ -64,9 +82,10 @@ export class TextureBox extends React.Component<props, state> {
 
     public render () {
         const { face, ui } = this.props;
+        const { textures, speculars, normals, emissives } = ui.state;
         return (
             <div className="texture_box">
-                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={ui.state.texture_data[face].name}>
+                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={textures[face].name}>
                     <option value='default'>default</option>
                     { (new Array(Texture.length)).fill('').map((s, i) => {
                         if (i !== face) {
@@ -76,24 +95,87 @@ export class TextureBox extends React.Component<props, state> {
                         } else return null;
                     }) }
                 </select>
+
+                <span>{ Texture[face] }</span>
                     
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
-                    onDrop={this.handleDrop}> 
-                    {ui.state.texture_data[face].src && 
-                        <img src={ui.state.texture_data[face].src || ''}></img>
+                    onDrop={this.handleDropTexture}> 
+                    {textures[face].src && 
+                        <img src={textures[face].src || ''}></img>
                     }
 
-                    {!ui.state.texture_data[face].src &&
+                    {!textures[face].src &&
                         <span>
-                            drag image here
+                            texture
                         </span> 
                     }
                 </div>
 
-                <br />
-                <span>{ Texture[face] }</span>
+                {textures[face].src && textures[face].name === Texture[face] &&
+                <div>
+                    <div className="box_image"
+                        onDragOver={this.handleDragOver}
+                        onDrop={this.handleDropSpecular}> 
+                    {speculars[face].src && 
+                        <img src={speculars[face].src || ''}></img>
+                    }
+
+                    {!speculars[face].src &&
+                        <span>
+                            specular
+                        </span> 
+                    }
+                </div>
+                
+                <div className="box_image"
+                    onDragOver={this.handleDragOver}
+                    onDrop={this.handleDropNormal}> 
+                    {normals[face].src && 
+                        <img src={normals[face].src || ''}></img>
+                    }
+
+                    {!normals[face].src &&
+                        <span>
+                            normal
+                        </span> 
+                    }
+                </div>                  
+
+                <div className="box_image"
+                    onDragOver={this.handleDragOver}
+                    onDrop={this.handleDropEmissive}> 
+                    {emissives[face].src && 
+                        <img src={emissives[face].src || ''}></img>
+                    }
+
+                    {!emissives[face].src &&
+                        <span>
+                            emissive
+                        </span> 
+                    }
+                </div>                   
+            </div>}
             </div> 
         )
+    }
+}
+
+
+function loadDropedImage(ev, next:(src:string) => void) {
+    if (ev.dataTransfer.items && ev.dataTransfer.items.length === 1) {
+        const item = ev.dataTransfer.items[0];
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (!file) { return; }
+            if (file.type === 'image/jpeg' || file.type === 'image/png') {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    next(reader.result);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
     }
 }

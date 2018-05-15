@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { Texture, UI } from '../client/ui';
-import DrawCube = require('../client/glCube');
+import { glCube } from '../client/glCube';
 
 import { TextureBox } from './texture-box';
 
@@ -24,7 +24,7 @@ export class MiddlePanel extends React.Component<props, state> {
             return;
         }
 
-        const cube = DrawCube(this.canvasElement);
+        const cube = glCube(this.canvasElement);
         this.props.ui.glCube = cube;
         cube.empty();
     }
@@ -52,10 +52,10 @@ export class MiddlePanel extends React.Component<props, state> {
     public handleAllToSame = (ev) => {
         const ui = this.props.ui;
 
-        ui.state.texture_data[0].linked = [1, 2, 3, 4, 5];
+        ui.state.textures[0].linked = [1, 2, 3, 4, 5];
         for (let i = 1; i < Texture.length; i ++) {
-            ui.state.texture_data[i].name = 'left';
-            ui.state.texture_data[i].src = ui.state.texture_data[0].src;
+            ui.state.textures[i].name = 'left';
+            ui.state.textures[i].src = ui.state.textures[0].src;
         }
         
         for (let listener of ui.textureBoxListeners) {

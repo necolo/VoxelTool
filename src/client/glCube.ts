@@ -30,12 +30,21 @@ const TEXTURE_COOR:[number, number][] = [
     [1.0, 0.0],
 ]
 
-type DrawCubeT = {
-    empty: () => void,
-    texture: (spec:{[face:number]:string}) => void,  
+export type GLTextureSpec = {
+    [face:number]:{
+        texture:string;
+        emissive:string;
+        specular:string;
+        normal:string;
+    }
 }
 
-export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
+export type DrawCubeT = {
+    empty: () => void,
+    texture: (spec:GLTextureSpec) => void,  
+}
+
+export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
 
@@ -166,12 +175,12 @@ export = function (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 faces[i].onload = run;
             }
 
-            faces[0].src = spec[Texture.right];
-            faces[1].src = spec[Texture.left];
-            faces[2].src = spec[Texture.top];
-            faces[3].src = spec[Texture.bottom];
-            faces[4].src = spec[Texture.front];
-            faces[5].src = spec[Texture.back];
+            faces[0].src = spec[Texture.right].texture;
+            faces[1].src = spec[Texture.left].texture;
+            faces[2].src = spec[Texture.top].texture;
+            faces[3].src = spec[Texture.bottom].texture;
+            faces[4].src = spec[Texture.front].texture;
+            faces[5].src = spec[Texture.back].texture;
             
             let count = 0;
 

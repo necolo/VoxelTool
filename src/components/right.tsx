@@ -156,11 +156,11 @@ export class RightPanel extends React.Component<props, state> {
             return;
         }
 
-        const { texture_data } = ui.state;
+        const { textures } = ui.state;
 
-        for (let i = 0; i < texture_data.length; i ++) {
-            const texture = texture_data[i];
-            if (!texture.src || !texture.name) {
+        for (let i = 0; i < textures.length; i ++) {
+            const tex = textures[i];
+            if (!tex.src || !tex.name) {
                 alert(`error: texture ${Texture[i]} not set`);
                 return;
             }
@@ -177,7 +177,7 @@ export class RightPanel extends React.Component<props, state> {
             const texture:string[] = new Array(Texture.length); 
     
             for (let i = 0; i < Texture.length; i ++) {
-                texture[i] = `${this.state.name}_${texture_data[i].name}`;
+                texture[i] = `${this.state.name}_${textures[i].name}`;
             }
     
             for (let i = 0; i < Thumbnail.length; i ++) {

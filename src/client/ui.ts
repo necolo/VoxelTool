@@ -1,3 +1,5 @@
+import { GLTextureSpec } from '../client/glCube';
+
 import { UIListener } from './uiListener';
 import { ClientProtocol } from './protocol';
 
@@ -22,14 +24,20 @@ export interface UIState {
     categoryList:string[];
     projects:string[];
     inProject:string;
-    texture_data:TextureData[];
+    textures:TextureData_links[];
+    speculars:TextureData[];
+    normals:TextureData[];
+    emissives:TextureData[];
     category:string;
 }
 
 export interface TextureData {
     src:string;
-    name:string; 
-    linked:Texture[];
+}
+
+export interface TextureData_links extends TextureData{
+    name:string;
+    linked:Texture[]
 }
 
 export class UI {
@@ -45,23 +53,27 @@ export class UI {
         categoryList: [],
         projects: [],
         inProject: 'default',
-        texture_data: [],
+        textures: [],
         category: '',
+        speculars: [],
+        normals: [],
+        emissives: [],
     }
 
     constructor(protocol:ClientProtocol) {
         this.protocol = protocol;
         this.textureBoxListeners.fill(new UIListener());
 
-        this.state.texture_data = new Array(Texture.length);
-        this.state.texture_data = new Array(Texture.length);
+        this.state.textures = new Array(Texture.length);
+        this.state.speculars = new Array(Texture.length);
+        this.state.normals = new Array(Texture.length);
+        this.state.emissives = new Array(Texture.length);
         this.init_texture_data();
 
         (window as any).ui = this;
 
         this.update_projects();
     }
-
 
     public update_projects() {
         this.protocol.get_projects((id, projects) => {
@@ -70,9 +82,9 @@ export class UI {
         })
     }
 
-    public uploadTextureImg(face:Texture, imgsrc:string) {
+    public uploadTexture(face:Texture, imgsrc:string) {
         const self = this;
-        const texs = this.state.texture_data;
+        const texs = this.state.textures;
 
         const noneTexUploaded = checkValue('src', '', texs);
         if (noneTexUploaded) {
@@ -106,10 +118,10 @@ export class UI {
 
         this.updateGL();
 
-        function _update_linked_faces(_texture:TextureData, src:string, name:string) {
+        function _update_linked_faces(_texture:TextureData_links, src:string, name:string) {
             for (let i = 0; i < _texture.linked.length; i ++) {
                 const linked_face = _texture.linked[i];
-                const linked_texture = self.state.texture_data[linked_face];
+                const linked_texture = self.state.textures[linked_face];
                 linked_texture.src = src;
                 self.textureBoxListeners[linked_face].notify();
                 _update_linked_faces(linked_texture, src, name);
@@ -118,9 +130,16 @@ export class UI {
     }
 
     public updateGL () {
-        const glSpec = {};
+        const glSpec:GLTextureSpec = {};
+        
         for (let i = 0; i < Texture.length; i ++) {
-            glSpec[i] = this.state.texture_data[i].src;
+            glSpec[i] = {
+                texture: '',
+                normal: '',
+                emissive: '',
+                specular: '',
+            };
+            glSpec[i].texture = this.state.textures[i].src;
         }
 
         this.glCube.texture(glSpec);
@@ -139,8 +158,8 @@ export class UI {
 
     public linkBlockSide (face:Texture, link:Texture) {
         const self = this;
-        const texture = this.state.texture_data[face];
-        const linked_texture = this.state.texture_data[link];
+        const texture = this.state.textures[face];
+        const linked_texture = this.state.textures[link];
         texture.name = Texture[link];
         texture.src = linked_texture.src; 
         linked_texture.linked.push(face);
@@ -161,11 +180,15 @@ export class UI {
 
     public init_texture_data () {
         for (let i = 0; i < Texture.length; i ++) {
-            this.state.texture_data[i] = {
+            this.state.textures[i] = {
                 src: '',
                 name: '',
                 linked: [],
             }
+
+            this.state.speculars[i] = {src: ''};
+            this.state.normals[i] = {src: ''};
+            this.state.emissives[i] = {src: ''};
         }
         for (let listener of this.textureBoxListeners) {
             listener.notify();
