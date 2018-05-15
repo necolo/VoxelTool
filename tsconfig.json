@@ -18,7 +18,7 @@
     ],
     "removeComments": true,
     "rootDir": "src",
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "target": "es5"
   },

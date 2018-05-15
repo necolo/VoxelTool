@@ -48,6 +48,9 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
 
+    // mouse.set_lightDirection([[0.5, 3.0, 4.0]]);
+    mouse.set_lightDirection([[0, 0, 1.0]]);
+
     const basicCube = regl({
         attributes: {
             position: insertArray(POSITION, [
@@ -66,11 +69,22 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down
                 0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back
             ],
+            normal: [
+                0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
+                1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,  // v0-v3-v4-v5 right
+                0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,  // v0-v5-v6-v1 up
+               -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  // v1-v6-v7-v2 left
+                0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,  // v7-v4-v3-v2 down
+                0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0   // v4-v7-v6-v5 back
+            ],
         },
         uniforms: {
             model: regl.context('model'),
             projection: regl.context('projection'),
             view: regl.context('view'),
+            lightColor: [1.0, 1.0, 1.0],
+            lightDirection: () => mouse.lightDirection(),
+            ambientLight: [0.2, 0.2, 0.2],
         },
         elements: [
             0, 1, 2,   0, 2, 3,    // front
@@ -109,14 +123,21 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
         empty: () => {
             const drawCube = regl({
                 vert: `
-                attribute vec3 position, color;
+                attribute vec3 position, color, normal;
                 uniform mat4 model, projection, view;
+                uniform vec3 lightColor, lightDirection, ambientLight;
                 varying vec4 v_color;
             
                 void main() {
-                  v_color = vec4(color, 1.0);
+                  
                   gl_Position = projection * view * model * vec4(position, 1.);
-                }   
+
+                  vec3 normaled = normalize(normal);
+                  float nDotL = max(dot(lightDirection, normaled), 0.0);
+                  vec3 diffuse = lightColor * color * nDotL;
+                  vec3 ambient = ambientLight * color.rgb;
+                  v_color = vec4(diffuse + ambient, 0.8);
+                }
                 `,
                 frag: `
                 precision mediump float;
