@@ -1,20 +1,20 @@
-todo:
+# Instruction
+don't know what to say yet. 
 
-基本功能：
-- 背景天空盒子图片
-- 往服务器存储图片
+# Install
+```
+npm install
+npm run watch
+npm run start2
+```
+
+
+# todo
+
+baisc：
+- background image
+- save image to server side
 
 further：
-- 读取服务器所有voxel
-- 选择voxel修改信息
-
-# webgl steps
-
-
-# drafts
-
-```js
-
-model: mouse.model(),
-
-```
+- read all voxels from server
+- select voxel and modify the data
