@@ -35,22 +35,39 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
 
         const { ui, face } = this.props;
+        const { texList } = ui.state;
         loadDropedImage(ev, (src) => {
             if (this.selectElement) {
                 this.selectElement.value = 'default';
             }
 
-            ui.uploadTexture(face, src);
+            const noneTexUploaded = checkValue('texture', '', texList);
+            if (noneTexUploaded) {
+                //for the first texture, link all other faces to it. 
+                const tex =texList[face];
+                tex.udpateTexture(src);
+    
+                for (let i = 0; i < texList.length; i ++) {
+                    if (i === face) { continue; }
+                    const linked_tex = texList[i];
+                    linked_tex.linkto(tex);
+                }
+            } else {
+                const tex = texList[face];
+                Texture.removeLink(tex, texList);
+                tex.udpateTexture(src);
+            }
+
+            ui.updateGL();
         })
     }
-
 
     public handleDropSpecular = (ev:React.DragEvent<HTMLDivElement>) => {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].specular = src;
-            this.forceUpdate();
+            ui.state.texList[face].updateSpecular(src);
+            ui.updateGL();
         })
     }
 
@@ -58,8 +75,8 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].specular = src;
-            this.forceUpdate();
+            ui.state.texList[face].updateNormal(src);
+            ui.updateGL();
         })
     } 
 
@@ -67,8 +84,8 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].emissive = src;
-            this.forceUpdate();
+            ui.state.texList[face].updateEmissive(src);
+            ui.updateGL();
         })
     }
 
@@ -169,7 +186,6 @@ export class TextureBox extends React.Component<props, state> {
     }
 }
 
-
 function loadDropedImage(ev, next:(src:string) => void) {
     if (ev.dataTransfer.items && ev.dataTransfer.items.length === 1) {
         const item = ev.dataTransfer.items[0];
@@ -186,4 +202,16 @@ function loadDropedImage(ev, next:(src:string) => void) {
             }
         }
     }
+}
+function checkValue (param:string, value:any, list:{}[]) : boolean {
+    let res:boolean = true;
+
+    for (let i = 0; i < list.length; i ++) {
+        if (list[i][param] !== value) {
+            res = false;
+            break;
+        }
+    } 
+
+    return res;
 }

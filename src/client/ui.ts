@@ -59,30 +59,6 @@ export class UI {
         })
     }
 
-    public uploadTexture(face:Face, imgsrc:string) {
-        const self = this;
-        const { texList } = this.state;
-
-        const noneTexUploaded = checkValue('texture', '', texList);
-        if (noneTexUploaded) {
-            //for the first texture, link all other faces to it. 
-            const tex =texList[face];
-            tex.udpateTexture(imgsrc);
-
-            for (let i = 0; i < texList.length; i ++) {
-                if (i === face) { continue; }
-                const linked_tex = texList[i];
-                linked_tex.linkto(tex);
-            }
-        } else {
-            const tex = texList[face];
-            Texture.removeLink(tex, texList);
-            tex.udpateTexture(imgsrc);
-        }
-
-        this.updateGL();
-    }
-
     public updateGL () {
         const glSpec:GLTextureSpec = {};
         
@@ -99,6 +75,7 @@ export class UI {
             glSpec[i].specular = this.state.texList[i].specular;
         }
 
+        console.log(glSpec);
         this.glCube.texture(glSpec);
     }
 
@@ -123,17 +100,4 @@ export class UI {
     public set_category (category:string) {
         this.state.category = category;
     }
-}
-
-function checkValue (param:string, value:any, list:{}[]) : boolean {
-    let res:boolean = true;
-
-    for (let i = 0; i < list.length; i ++) {
-        if (list[i][param] !== value) {
-            res = false;
-            break;
-        }
-    } 
-
-    return res;
 }

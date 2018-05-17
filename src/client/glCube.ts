@@ -213,6 +213,8 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             faces[4].src = spec[Face.front].texture;
             faces[5].src = spec[Face.back].texture;
             
+            console.log(spec);
+            
             let count = 0;
 
             function run () {
