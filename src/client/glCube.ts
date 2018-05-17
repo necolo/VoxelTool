@@ -48,26 +48,27 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
 
-    // mouse.set_lightDirection([[0.5, 3.0, 4.0]]);
-    mouse.set_lightDirection([[0, 0, 1.0]]);
+    mouse.preset({
+        camera: [0, 0, 8],
+    })
 
     const basicCube = regl({
         attributes: {
             position: insertArray(POSITION, [
                 0, 1, 2, 3,
-                4, 5, 6, 7,
-                0, 1, 6, 5,
-                2, 3, 4, 7,
                 0, 3, 4, 5,
-                1, 2, 7, 6,
+                0, 5, 6, 1,
+                1, 6, 7, 2,
+                7, 4, 3, 2,
+                4, 7, 6, 5,
             ]),
             color: [
-                0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  // v0-v1-v2-v3 front(blue)
+                0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  // v0-v1-v2-v3 front(purple)
                 0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  // v0-v3-v4-v5 right(green)
                 1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  // v0-v5-v6-v1 up(red)
-                1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  // v1-v6-v7-v2 left
-                1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down
-                0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back
+                1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  // v1-v6-v7-v2 left(yellow)
+                1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down(white)
+                0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back(blue)
             ],
             normal: [
                 0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
@@ -83,7 +84,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             projection: regl.context('projection'),
             view: regl.context('view'),
             lightColor: [1.0, 1.0, 1.0],
-            lightDirection: () => mouse.lightDirection(),
+            lightPosition: [20, 0, 0],
             ambientLight: [0.2, 0.2, 0.2],
         },
         elements: [
@@ -125,26 +126,32 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 vert: `
                 attribute vec3 position, color, normal;
                 uniform mat4 model, projection, view;
-                uniform vec3 lightColor, lightDirection, ambientLight;
-                varying vec4 v_color;
+                varying vec4 v_cameraPosition;
+                varying vec3 v_normaled, v_color;
             
                 void main() {
-                  
-                  gl_Position = projection * view * model * vec4(position, 1.);
+                  vec4 cameraPosition = view * vec4(position, 1.);
+                  gl_Position = projection * cameraPosition;
 
-                  vec3 normaled = normalize(normal);
-                  float nDotL = max(dot(lightDirection, normaled), 0.0);
-                  vec3 diffuse = lightColor * color * nDotL;
-                  vec3 ambient = ambientLight * color.rgb;
-                  v_color = vec4(diffuse + ambient, 0.8);
+                  vec3 normaled = normalize((view * vec4(normal, 0.)).xyz);
+                  v_color = color;
+                  v_normaled = normaled;
+                  v_cameraPosition = cameraPosition;
                 }
                 `,
                 frag: `
                 precision mediump float;
-                varying vec4 v_color;
+                uniform vec3 lightColor, lightPosition, ambientLight;
+                varying vec3 v_normaled, v_color;
+                varying vec4 v_cameraPosition;
 
                 void main() {
-                    gl_FragColor = v_color;
+                    vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
+                    float nDotL = max(dot(lightDirection, v_normaled), 0.);
+                    vec3 diffuse = lightColor * v_color * nDotL;
+                    vec3 ambient = ambientLight * v_color.rgb;
+
+                    gl_FragColor = vec4(diffuse + ambient, 0.8);
                 } 
                 `,
             });
@@ -154,25 +161,36 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
         texture: (spec) => {
             const drawCube = regl({
                 vert: `
-                attribute vec3 position, color;
+                attribute vec3 position, color, normal;
                 uniform mat4 model, projection, view;
-                varying vec4 v_color;
                 varying vec3 v_textureCoor;
+                varying vec4 v_cameraPosition;
+                varying vec3 v_normaled;
             
                 void main() {
-                  v_color = vec4(color, 1.0);
+                  vec4 cameraPosition = view * vec4(position, 1.);
+                  gl_Position = projection * cameraPosition;
+
                   v_textureCoor = position;
-                  gl_Position = projection * view * model * vec4(position, 1.);
+                  v_cameraPosition = cameraPosition;
+                  v_normaled = normalize((view * vec4(normal, 0.)).xyz);
                 }
                 `,
                 frag: `
                 precision mediump float;
                 uniform samplerCube cube; 
-                varying vec4 v_color;
-                varying highp vec3 v_textureCoor;
+                uniform vec3 lightColor, lightPosition, ambientLight;
+                varying vec3 v_textureCoor, v_normaled;
+                varying vec4 v_cameraPosition;
         
                 void main() {
-                    gl_FragColor = textureCube(cube, v_textureCoor);
+                    vec4 textureColor = textureCube(cube, v_textureCoor);
+                    vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
+                    float nDotL = max(dot(lightDirection, v_normaled), 0.);
+                    vec3 diffuse = textureColor.rgb * nDotL;
+                    vec3 ambient = ambientLight * textureColor.rgb;                    
+
+                    gl_FragColor = vec4(diffuse + ambient, 0.8);
                 } 
                 `,
                 uniforms: {
