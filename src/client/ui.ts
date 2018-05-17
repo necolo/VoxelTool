@@ -75,7 +75,6 @@ export class UI {
             glSpec[i].specular = this.state.texList[i].specular;
         }
 
-        console.log(glSpec);
         this.glCube.texture(glSpec);
     }
 
