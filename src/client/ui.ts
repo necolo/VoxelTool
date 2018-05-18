@@ -17,6 +17,7 @@ export interface UIState {
     inProject:string;
     texList:Texture[];
     category:string;
+    transparent:boolean;
 }
 
 export function allocTexList () : Texture[] {
@@ -41,6 +42,7 @@ export class UI {
         inProject: 'default',
         texList: [],
         category: '',
+        transparent: false,
     }
 
     constructor(protocol:ClientProtocol) {
@@ -60,19 +62,18 @@ export class UI {
     }
 
     public updateGL () {
-        const glSpec:GLTextureSpec = {};
+        const glSpec:GLTextureSpec = {} as GLTextureSpec;
+
+        glSpec.transparent = this.state.transparent;
+        glSpec.tex = {};
         
         for (let i = 0; i < Face.length; i ++) {
-            glSpec[i] = {
-                texture: '',
-                normal: '',
-                emissive: '',
-                specular: '',
+            glSpec.tex[i] = {
+                texture: this.state.texList[i].texture,
+                normal: this.state.texList[i].normal,
+                emissive: this.state.texList[i].emissive,
+                specular: this.state.texList[i].specular,
             };
-            glSpec[i].texture = this.state.texList[i].texture;
-            glSpec[i].emissive = this.state.texList[i].emissive;
-            glSpec[i].normal = this.state.texList[i].normal;
-            glSpec[i].specular = this.state.texList[i].specular;
         }
 
         this.glCube.texture(glSpec);

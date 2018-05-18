@@ -10,7 +10,6 @@ interface props {
 
 interface state {
     name:string;
-    transparent:boolean;
     color:number[];
     emissive:number[];
     friction:number,
@@ -23,7 +22,6 @@ export class RightPanel extends React.Component<props, state> {
 
     public state = {
         name: '',
-        transparent: false,
         color: [1, 1, 1, 1],
         emissive: [0, 0, 0],
         friction: 1, 
@@ -63,11 +61,8 @@ export class RightPanel extends React.Component<props, state> {
                     <span>transparent</span>
                     <input type="checkbox" 
                         onChange={(ev) => {
-                            if (ev.target.value === 'false') {
-                                this.setState({transparent: false});                                
-                            } else if (ev.target.value === 'true') {
-                                this.setState({transparent: true});
-                            }
+                            ui.state.transparent = !ui.state.transparent; 
+                            ui.updateGL();
                         }}
                     />
                 </div>
@@ -188,7 +183,7 @@ export class RightPanel extends React.Component<props, state> {
             const spec:VoxelSpec = {
                 thumbnail,
                 texture,
-                transparent: this.state.transparent,
+                transparent: ui.state.transparent,
                 color: this.state.color,
                 emissive: this.state.emissive,
                 friction: this.state.friction,
@@ -201,7 +196,6 @@ export class RightPanel extends React.Component<props, state> {
                 if (success) {
                     this.setState({
                         name: '',
-                        transparent: false,
                         color: [1, 1, 1, 1],
                         emissive: [0, 0, 0],
                         friction: 1, 
@@ -209,6 +203,7 @@ export class RightPanel extends React.Component<props, state> {
                         mass: 1,            
                     })
                     ui.state.texList = allocTexList();
+                    ui.state.transparent = false;
                 } else {
                     alert('error: save failed')
                 }

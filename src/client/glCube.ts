@@ -1,4 +1,5 @@
 import { mat4 } from 'gl-matrix';
+import { ControlBox } from 'control-box';
 
 import { Face } from './texture';
 import { glMouse } from './glMouse';
@@ -31,12 +32,13 @@ const TEXTURE_COOR:[number, number][] = [
 ]
 
 export type GLTextureSpec = {
-    [face:number]:{
+    tex:{[face:number]:{
         texture:string;
         emissive:string;
         specular:string;
         normal:string;
-    }
+    }},
+    transparent:boolean,
 }
 
 export type DrawCubeT = {
@@ -51,6 +53,8 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     mouse.preset({
         camera: [0, 0, 8],
     })
+
+    const box = new ControlBox();
 
     const basicCube = regl({
         attributes: {
@@ -151,9 +155,16 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     vec3 diffuse = lightColor * v_color * nDotL;
                     vec3 ambient = ambientLight * v_color.rgb;
 
-                    gl_FragColor = vec4(diffuse + ambient, 0.8);
+                    gl_FragColor = vec4(diffuse + ambient, 1.);
                 } 
                 `,
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 1,
+                        dst: 'one minus src alpha',
+                    }
+                },
             });
 
             process = () => basicCube(undefined, () => drawCube());
@@ -188,14 +199,21 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
                     float nDotL = max(dot(lightDirection, v_normaled), 0.);
                     vec3 diffuse = textureColor.rgb * nDotL;
-                    vec3 ambient = ambientLight * textureColor.rgb;                    
+                    vec3 ambient = ambientLight * textureColor.rgb;
 
-                    gl_FragColor = vec4(diffuse + ambient, 0.8);
+                    gl_FragColor = vec4(diffuse + ambient, ${spec.transparent ? '0.3' : '1.0'});
                 } 
                 `,
                 uniforms: {
                     cube: regl.prop('cube'),
-                }
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 1,
+                        dst: 'one minus src alpha',
+                    }
+                },
             });
 
             const faces:HTMLImageElement[] = new Array(6);
@@ -206,12 +224,12 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 faces[i].onload = run;
             }
 
-            faces[0].src = spec[Face.right].texture;
-            faces[1].src = spec[Face.left].texture;
-            faces[2].src = spec[Face.top].texture;
-            faces[3].src = spec[Face.bottom].texture;
-            faces[4].src = spec[Face.front].texture;
-            faces[5].src = spec[Face.back].texture;
+            faces[0].src = spec.tex[Face.right].texture;
+            faces[1].src = spec.tex[Face.left].texture;
+            faces[2].src = spec.tex[Face.top].texture;
+            faces[3].src = spec.tex[Face.bottom].texture;
+            faces[4].src = spec.tex[Face.front].texture;
+            faces[5].src = spec.tex[Face.back].texture;
             
             let count = 0;
 
@@ -224,7 +242,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                         return;
                     }
                     process = () => basicCube(undefined, () => drawCube({
-                        cube: regl.cube(...faces)
+                        cube: regl.cube(...faces),
                     }))
                 }
             }
