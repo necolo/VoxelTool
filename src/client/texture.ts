@@ -1,4 +1,5 @@
 import { UIListener } from './uiListener';
+import { Voxel } from './voxel';
 
 export enum Face {
     left,
@@ -18,29 +19,32 @@ export class Texture {
 
     public name:string;
     public face:number;
-    public linked:Texture[];
+    public link:Texture|null;
 
     public listener:UIListener;
 
-    constructor(face:number) {
+    private _voxel:Voxel;
+
+    constructor(face:number, voxel:Voxel) {
         this.face = face;
         this.listener = new UIListener();
+        this._voxel = voxel;
         
-        this.name = '';
-        this.linked = [];
+        this.name = Face[this.face];
+        this.link = null;
 
         this.emissive = '';
         this.specular = '';
         this.normal = '';
         this.texture = '';
     }
-
-    public static removeLink (tex:Texture, texList:Texture[]) {
-        for (let i = 0; i < texList.length; i ++) {
-            const linkIndex = texList[i].linked.indexOf(tex);
-            if (linkIndex > -1) {
-                texList[i].linked.splice(linkIndex, 1);
-            }            
+    
+    public static updateUI (changedTex:Texture, texList:Texture[]) {
+        for (let tex of texList) {
+            if (tex.link === changedTex) {
+                tex.listener.notify();
+                Texture.updateUI(tex, texList);
+            }
         }
     }
 
@@ -49,68 +53,85 @@ export class Texture {
         this.emissive = '';
         this.specular = '';
         this.normal = '';
-        this.name = '';
     }
 
     public udpateTexture(src:string) {
         this.empty();
         this.texture = src;
-        this.name = Face[this.face];
+        this.link = null;
+        this._voxel.blank = false;
 
-        const linked = this.linked;
         this.listener.notify();
-        this._update_linked_faces(this);
+        Texture.updateUI(this, this._voxel.texList);
     }
 
     public updateEmissive(src:string) {
         this.emissive = src;
+
         this.listener.notify();
-        this._update_linked_faces(this);
+        Texture.updateUI(this, this._voxel.texList);
     }
 
     public updateSpecular(src:string) {
         this.specular = src;
+
         this.listener.notify();
-        this._update_linked_faces(this);
+        Texture.updateUI(this, this._voxel.texList);
     }
 
     public updateNormal(src:string) {
         this.normal = src;
+
         this.listener.notify();
-        this._update_linked_faces(this);
+        Texture.updateUI(this, this._voxel.texList);
     }
 
-    public linkto(tex:Texture) {
-        this.name = Face[tex.face];
+    public getSrc () : {
+        texture: string;
+        specular: string;
+        emissive: string;
+        normal: string;
+    } {
+        if (this.link) {
+            return this.link.getSrc();
+        }
 
-        this.texture = tex.texture;
-        this.normal = tex.normal;
-        this.specular = tex.specular;
-        this.emissive = tex.emissive;
-        this._update_linked_faces(this);
+        return {
+            texture: this.texture,
+            specular: this.specular,
+            emissive: this.emissive,
+            normal: this.normal,
+        }
+    }
 
-        tex.linked.push(this);
+    public getName () : string {
+        if (this.link) {
+            return this.link.getName();
+        }
+
+        return this.name;
+    }
+
+    public setLinkto(tex:Texture) {
+        this.empty();
+        this.link = tex;
+
+        this.listener.notify();
+        Texture.updateUI(this, this._voxel.texList);
+    }
+
+    public getLinkName () : string {
+        if (this.link) {
+            return Face[this.link.face];
+        }
+
+        return this.name;
+    }
+
+    public removeLink() {
+        this.link = null;
         
         this.listener.notify();
-    }
-
-    public nolinkto() {
-        this.name = Face[this.face];
-        this.listener.notify();
-        this._update_linked_faces(this);
-    }
-
-    private _update_linked_faces(based_texture) {
-        const linked = based_texture.linked;
-        for (let i = 0; i < linked.length; i ++) {
-            const linked_tex = linked[i];
-            linked_tex.texture = based_texture.texture;
-            linked_tex.emissive = based_texture.emissive;
-            linked_tex.specular = based_texture.specular;
-            linked_tex.normal = based_texture.normal;
-
-            linked_tex.listener.notify();
-            this._update_linked_faces(linked_tex)
-        }
+        Texture.updateUI(this, this._voxel.texList)
     }
 }

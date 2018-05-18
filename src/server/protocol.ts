@@ -44,10 +44,6 @@ export class ServerProtocol {
             .then(() => this.socket.send(id, true));
         });
 
-        this.socket.sub(RequestId.download_project, (id, req) => {
-
-        });
-
         this.socket.sub(RequestId.get_projects, (id, req) => {
             const projects = db.get(`project`).value();
             this.socket.send(id, Object.keys(projects));            

@@ -20,11 +20,11 @@ export class TextureBox extends React.Component<props, state> {
     };
 
     public componentDidMount() {
-        this.props.ui.state.texList[this.props.face].listener.subscribe(this);
+        this.props.ui.voxel.texList[this.props.face].listener.subscribe(this);
     }
 
     public componentWillUnmount() {
-        this.props.ui.state.texList[this.props.face].listener.unsubscribe(this);
+        this.props.ui.voxel.texList[this.props.face].listener.unsubscribe(this);
     }
 
     public handleDragOver = (ev:React.DragEvent<HTMLDivElement>) => {
@@ -35,7 +35,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
 
         const { ui, face } = this.props;
-        const { texList } = ui.state;
+        const { texList } = ui.voxel;
         loadDropedImage(ev, (src) => {
             if (this.selectElement) {
                 this.selectElement.value = 'default';
@@ -44,17 +44,16 @@ export class TextureBox extends React.Component<props, state> {
             const noneTexUploaded = checkValue('texture', '', texList);
             if (noneTexUploaded) {
                 //for the first texture, link all other faces to it. 
-                const tex =texList[face];
+                const tex = texList[face];
                 tex.udpateTexture(src);
     
                 for (let i = 0; i < texList.length; i ++) {
                     if (i === face) { continue; }
                     const linked_tex = texList[i];
-                    linked_tex.linkto(tex);
+                    linked_tex.setLinkto(tex);
                 }
             } else {
                 const tex = texList[face];
-                Texture.removeLink(tex, texList);
                 tex.udpateTexture(src);
             }
 
@@ -66,7 +65,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].updateSpecular(src);
+            ui.voxel.texList[face].updateSpecular(src);
             ui.updateGL();
         })
     }
@@ -75,7 +74,7 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].updateNormal(src);
+            ui.voxel.texList[face].updateNormal(src);
             ui.updateGL();
         })
     } 
@@ -84,33 +83,41 @@ export class TextureBox extends React.Component<props, state> {
         ev.preventDefault();
         const { ui, face } = this.props;
         loadDropedImage(ev, (src) => {
-            ui.state.texList[face].updateEmissive(src);
+            ui.voxel.texList[face].updateEmissive(src);
             ui.updateGL();
         })
     }
 
     public handleSelect = (ev) => {
         const { ui, face } = this.props;
-        const thisTex = ui.state.texList[face];
+        const { texList } = ui.voxel;
+        const thisTex = texList[face];
 
         if (ev.target.value !== 'default') {
             const linkface = Face[ev.target.value as keyof Face];
-            thisTex.linkto(ui.state.texList[linkface]);
+            const linkTex = texList[linkface];
+
+            if (linkTex.link && linkTex.link.face === face) {
+                alert('warning: you cannot link two sides each to other');
+                return;
+            }
+
+            thisTex.setLinkto(linkTex);
             ui.updateGL();
         } else {
             // people cant choose this
-
-            // Texture.removeLink(thisTex, ui.state.texList);
-            // thisTex.nolinkto();
         }
     }
 
     public render () {
         const { face, ui } = this.props;
-        const { texList } = ui.state;
+        const { blank } = ui.voxel;
+        const tex = ui.voxel.texList[face];
+        const { texture, emissive, normal, specular } = tex.getSrc();
+
         return (
             <div className="texture_box">
-                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={texList[face].name}>
+                <select onChange={this.handleSelect} ref={(e) => this.selectElement = e} value={tex.getLinkName()}>
                     <option value='default'>default</option>
                     { (new Array(Face.length)).fill('').map((s, i) => {
                         if (i !== face) {
@@ -126,27 +133,28 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropTexture}> 
-                    {texList[face].texture && 
-                        <img src={texList[face].texture || ''}></img>
+                    { texture &&
+                        <img src={texture}></img>
                     }
 
-                    {!texList[face].texture &&
+                    { !texture &&
                         <span>
                             texture
                         </span> 
                     }
                 </div>
 
-                {texList[face].texture && texList[face].name === Face[face] &&
+                {!tex.link && !blank && 
                 <div>
                     <div className="box_image"
                         onDragOver={this.handleDragOver}
                         onDrop={this.handleDropSpecular}> 
-                    {texList[face].specular && 
-                        <img src={texList[face].specular || ''}></img>
+
+                    {specular && 
+                        <img src={specular}></img>
                     }
 
-                    {!texList[face].specular &&
+                    {!specular &&
                         <span>
                             specular
                         </span> 
@@ -156,11 +164,11 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropNormal}> 
-                    {texList[face].normal && 
-                        <img src={texList[face].normal || ''}></img>
+                    {normal && 
+                        <img src={normal}></img>
                     }
 
-                    {!texList[face].normal &&
+                    {!normal &&
                         <span>
                             normal
                         </span> 
@@ -170,11 +178,11 @@ export class TextureBox extends React.Component<props, state> {
                 <div className="box_image"
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDropEmissive}> 
-                    {texList[face].emissive && 
-                        <img src={texList[face].emissive || ''}></img>
+                    {emissive && 
+                        <img src={emissive || ''}></img>
                     }
 
-                    {!texList[face].emissive &&
+                    {!emissive &&
                         <span>
                             emissive
                         </span> 

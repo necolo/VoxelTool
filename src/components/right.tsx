@@ -1,40 +1,25 @@
 import * as React from 'react';
 
-import { UI, Thumbnail, allocTexList } from '../client/ui';
+import { UI } from '../client/ui';
 import { Face } from '../client/texture';
-import { VoxelSpec } from '../spec';
+import { Voxel, Thumbnail } from '../client/voxel';
 
 interface props {
     ui:UI;
 }
 
 interface state {
-    name:string;
-    color:number[];
-    emissive:number[];
-    friction:number,
-    restitution:number,
-    mass:number,
 }
 
 export class RightPanel extends React.Component<props, state> {
     public add_category_input:HTMLInputElement|null = null;
 
-    public state = {
-        name: '',
-        color: [1, 1, 1, 1],
-        emissive: [0, 0, 0],
-        friction: 1, 
-        restitution: 0,
-        mass: 1,
-    }
-
     public componentDidMount() {
-        this.props.ui.rightPanelListener.subscribe(this);
+        this.props.ui.voxel.listener.subscribe(this);
     }
 
     public componentWillUnmount() {
-        this.props.ui.rightPanelListener.unsubscribe(this);
+        this.props.ui.voxel.listener.unsubscribe(this);
     }
 
     public render () {
@@ -52,8 +37,8 @@ export class RightPanel extends React.Component<props, state> {
                 <div className="box">
                     <span>name</span>
                     <input type="text"
-                        value={this.state.name} 
-                        onChange={(ev) => this.setState({name: ev.target.value})}
+                        value={ui.voxel.name} 
+                        onChange={(ev) => ui.voxel.setName(ev.target.value)}
                     />
                 </div>
 
@@ -61,7 +46,7 @@ export class RightPanel extends React.Component<props, state> {
                     <span>transparent</span>
                     <input type="checkbox" 
                         onChange={(ev) => {
-                            ui.state.transparent = !ui.state.transparent; 
+                            ui.voxel.updateSpec('transparent', !ui.voxel.spec.transparent);
                             ui.updateGL();
                         }}
                     />
@@ -81,8 +66,8 @@ export class RightPanel extends React.Component<props, state> {
                     <span>friction</span>
                     <input type="number"
                         className="number_input"
-                        value={this.state.friction}
-                        onChange={(ev) => this.setState({friction: parseFloat(ev.target.value)})}
+                        value={ui.voxel.spec.friction}
+                        onChange={(ev) => ui.voxel.updateSpec('friction', parseFloat(ev.target.value))}
                     />
                 </div>
 
@@ -90,8 +75,8 @@ export class RightPanel extends React.Component<props, state> {
                     <span>restitution</span>
                     <input type="number"
                         className="number_input"
-                        value={this.state.restitution}
-                        onChange={(ev) => this.setState({restitution: parseFloat(ev.target.value)})}
+                        value={ui.voxel.spec.restitution}
+                        onChange={(ev) => ui.voxel.updateSpec('restitution', parseFloat(ev.target.value))}
                     />
                 </div>
 
@@ -99,8 +84,8 @@ export class RightPanel extends React.Component<props, state> {
                     <span>mass</span>
                     <input type="number"
                         className="number_input"
-                        value={this.state.mass}
-                        onChange={(ev) => this.setState({mass: parseFloat(ev.target.value)})}
+                        value={ui.voxel.spec.mass}
+                        onChange={(ev) => ui.voxel.updateSpec('mass', parseFloat(ev.target.value))}
                     />
                 </div>
 
@@ -142,72 +127,8 @@ export class RightPanel extends React.Component<props, state> {
 
     public handleSaveVoxel = (ev) => {
         const { ui } = this.props;
-        if (this.state.name === '') {
-            alert('error: name is empty');
-            return;
-        }
-
-        if (ui.state.category === '') {
-            alert('error: category is empty');
-            return;
-        }
-
-        const { texList } = ui.state;
-
-        for (let i = 0; i < texList.length; i ++) {
-            const tex = texList[i];
-            if (!tex.texture || !tex.name) {
-                alert(`error: texture ${Face[i]} not set`);
-                return;
-            }
-        }
-
-        const name = this.state.name;
-        ui.protocol.get_voxel(name, (id, data) => {
-            if (data) {
-                alert(`error: already exist voxel ${name}`)
-                return;
-            }
-
-            const thumbnail:string[] = new Array(Thumbnail.length);
-            const texture:string[] = new Array(Face.length); 
-    
-            for (let i = 0; i < Face.length; i ++) {
-                texture[i] = `${this.state.name}_${texList[i].name}`;
-            }
-    
-            for (let i = 0; i < Thumbnail.length; i ++) {
-                thumbnail[i] = texture[Face[Thumbnail[i]]];
-            }
-    
-            const spec:VoxelSpec = {
-                thumbnail,
-                texture,
-                transparent: ui.state.transparent,
-                color: this.state.color,
-                emissive: this.state.emissive,
-                friction: this.state.friction,
-                mass: this.state.mass,
-                category: ui.state.category,
-                restitution: this.state.restitution,
-            };
-    
-            ui.protocol.add_voxel(name, spec, (id, success) => {
-                if (success) {
-                    this.setState({
-                        name: '',
-                        color: [1, 1, 1, 1],
-                        emissive: [0, 0, 0],
-                        friction: 1, 
-                        restitution: 0,
-                        mass: 1,            
-                    })
-                    ui.state.texList = allocTexList();
-                    ui.state.transparent = false;
-                } else {
-                    alert('error: save failed')
-                }
-            })
+        ui.voxel.save(() => {
+            ui.voxel = new Voxel(ui.protocol);
         })
     }
 
@@ -233,16 +154,10 @@ export class RightPanel extends React.Component<props, state> {
                 <input type="number" 
                     key={i}
                     className="number_input"
-                    value={this.state[target][i]}
+                    value={this.props.ui.voxel.spec[target][i]}
                     onChange={(ev) => {
                         const value = ev.target.value;
-                        this.setState((prevState) => {
-                            const t = prevState[target].concat();
-                            t[i] = parseFloat(value);
-                            const res = {};  
-                            res[target] = t;
-                            return res;
-                        })
+                        this.props.ui.voxel.updateSpec(target, value, i);
                     }}
                 />
             )
@@ -272,12 +187,12 @@ export class CategorySelect extends React.Component<CategorySelectProps, Categor
 
     public componentDidUpdate () {
         if (this.element) {
-            this.props.ui.set_category(this.element.value);
+            this.props.ui.voxel.spec.category = this.element.value;
         }
     }
 
     public handleChange = (ev) => {
-        this.props.ui.set_category(ev.target.value);
+        this.props.ui.selectProject(ev.target.value);
     }
 
     public render () {

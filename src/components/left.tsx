@@ -90,6 +90,6 @@ class ListProject extends React.Component<ListProp, ListState> {
     }
 
     public handleClick = (ev) => {
-        this.props.ui.setProject(this.props.name);
+        this.props.ui.selectProject(this.props.name);
     }
 }
