@@ -8,7 +8,7 @@
     "watch": "tsc --watch & watchify --debug src/local.ts -p [ tsify --project tsconfig.json ] -o bundle.js & less-watch-compiler src/components build/components",
     "start2": "budo build/local.js:bundle.js --dir . --serve bundle.js --open --live -- --debug",
     "build-net": "tsc && browserify src/web-client.ts -p [ tsify --project tsconfig.json ] -o bundle.js",
-    "net": "",
+    "net": "node build/web-server.js",
     "start": "budo src/local.ts:bundle.js --dir . --serve bundle.js --open --live -- --debug -p [ tsify --project tsconfig.json ]"
   },
   "dependencies": {
