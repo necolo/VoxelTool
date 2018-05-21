@@ -7,9 +7,20 @@
   "scripts": {
     "watch": "tsc --watch & watchify --debug src/local.ts -p [ tsify --project tsconfig.json ] -o bundle.js & less-watch-compiler src/components build/components",
     "start2": "budo build/local.js:bundle.js --dir . --serve bundle.js --open --live -- --debug",
+    "build-net": "tsc && browserify src/web-client.ts -p [ tsify --project tsconfig.json ] -o bundle.js",
+    "net": "",
     "start": "budo src/local.ts:bundle.js --dir . --serve bundle.js --open --live -- --debug -p [ tsify --project tsconfig.json ]"
   },
   "dependencies": {
+    "ecstatic": "^3.2.0",
+    "gl-matrix": "^2.5.1",
+    "lowdb": "^1.0.0",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "regl": "^1.3.1",
+    "uws": "^9.148.0"
+  },
+  "devDependencies": {
     "@types/gl-matrix": "^2.4.0",
     "@types/lowdb": "^1.0.1",
     "@types/node": "^9.6.6",
@@ -17,15 +28,8 @@
     "@types/uws": "^0.13.2",
     "browserify": "^16.2.0",
     "budo": "^11.2.0",
-    "canvas-orbit-camera": "^1.0.2",
-    "gl-matrix": "^2.5.1",
-    "lowdb": "^1.0.0",
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
-    "regl": "^1.3.1",
     "tsify": "^4.0.0",
     "typescript": "^2.8.3",
-    "uws": "^9.148.0",
     "watchify": "^3.11.0"
   }
 }

@@ -1,4 +1,5 @@
 export enum RequestId {
+    connected,
     category_list,
     add_category,
     add_voxel,

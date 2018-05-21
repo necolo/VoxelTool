@@ -1,3 +1,5 @@
+import { VoxelSpec } from '../spec';
+
 import { ClientProtocol } from './protocol';
 import { Texture, Face } from './texture';
 import { UIListener } from './uiListener';
@@ -7,19 +9,6 @@ export enum Thumbnail {
     left,
     right,
     length,
-}
-
-export interface VoxelSpec {
-    id?:number;
-    thumbnail:string[];
-    texture:string[];
-    transparent:boolean;
-    color:number[];
-    emissive:number[];
-    friction:number;
-    restitution:number;
-    mass:number;
-    category:string;
 }
 
 export class Voxel {

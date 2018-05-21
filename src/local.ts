@@ -28,7 +28,7 @@ class SocketHub {
         return {
             onmessage: new Array(RequestId.LENGTH),
             sub: (id:number, handler:MessageHandler<any>) => {
-                this[target].onmessage[id] = handler;   
+                this[target].onmessage[id] = handler;
             },
             notify: (id:number, data:any) => {
                 this[target].onmessage[id](id, data);
@@ -90,7 +90,7 @@ class DB {
         this.data = {
             project: {
                 'default': {
-                    categoryList: [],
+                    categoryList: ['decoration', 'symbol', 'color', 'natural', 'item', 'structural'],
                     voxelSpec: {},
                     id_count: 0,
                 },

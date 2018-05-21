@@ -1,3 +1,8 @@
+import http = require('http');
+import ip = require('ip');
+import path = require('path');
+import ecstatic = require('ecstatic');
+
 const WebSocketServer = require('uws').Server;
 import { db } from './server/db';
 
@@ -8,27 +13,28 @@ import {
     MessageHandler,
 } from './spec';
 
-const wss = new WebSocketServer({port: 8002});
 
 export class ServerSocket implements SocketInterface {
     public onmessage:MessageHandler<any>[];
+
+    private _ws:any;
 
     constructor () {
         const self = this;
         this.onmessage = new Array(RequestId.LENGTH);
 
         wss.on('connection', function (ws) {
+            self._ws = ws;
             ws.on('message', (msg) => {
+                console.log('receive:', msg);
                 const { id, data } = JSON.parse(msg);
-                for (let i = 0; i < self.onmessage[id].length; i ++) {
-                    self.onmessage[id][i](id, data);
-                }
+                self.onmessage[id](id, data);
             })
         })
     }
 
     public send (id:number, data:any) {
-        wss.send(JSON.stringify({
+        this._ws.send(JSON.stringify({
             id,
             data,
         }))
@@ -43,5 +49,18 @@ export class ServerSocket implements SocketInterface {
     }
 }
 
+const PORT = 8002;
+
+const server = http.createServer(ecstatic({
+    root: path.join(__dirname, '../'),
+}))
+
+const wss = new WebSocketServer({
+    server,
+});
 const serverSocket = new ServerSocket();
+
 createServer(serverSocket, db);
+server.listen(PORT);
+
+console.log(`listening on: http://${ip.address()}:${PORT}`);

@@ -192,7 +192,7 @@ export class CategorySelect extends React.Component<CategorySelectProps, Categor
     }
 
     public handleChange = (ev) => {
-        this.props.ui.selectProject(ev.target.value);
+        this.props.ui.voxel.updateSpec('category', ev.target.value);
     }
 
     public render () {

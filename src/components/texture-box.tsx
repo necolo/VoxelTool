@@ -127,7 +127,8 @@ export class TextureBox extends React.Component<props, state> {
                         } else return null;
                     }) }
                 </select>
-
+                
+                <br />
                 <span>{ Face[face] }</span>
                     
                 <div className="box_image"

@@ -7,4 +7,10 @@ const adapter = new FileSync('db.json');
 export const db = low(adapter);
 
 
-db.defaults({ project: {} }).write();
+db.defaults({ project: {
+    'default': {
+        categoryList: [],
+        voxelSpec: {},
+        id_count: 0,
+    },
+}}).write();

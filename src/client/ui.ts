@@ -68,6 +68,10 @@ export class UI {
 
     public update_category_list () {
         this.protocol.get_category_list((id, category_list) => {
+            if (category_list === undefined) {
+                return;
+            }
+
             this.state.categoryList = category_list.concat();
             this.categoryListener.notify();
         })
