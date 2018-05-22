@@ -15,7 +15,6 @@ export class ClientSocket implements SocketInterface{
         ws.addEventListener('open', (event) => {
             createClient(socket);
             ws.addEventListener('message', (event) => {
-                console.log('receive:', event.data);
                 const { id, data } = JSON.parse(event.data);
                 self.onmessage[id](id, data);
             })

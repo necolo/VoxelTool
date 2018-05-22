@@ -169,7 +169,7 @@ export class ServerHandler implements ServerHandlerI {
         console.log('savefile:', spec.project, spec.category, spec.filename);
     }
 
-    public extract (project) {
+    public extract (project, next:(download_path:string) => void) {
         console.log('extract', project);
     }
 }
