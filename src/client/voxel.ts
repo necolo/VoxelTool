@@ -85,7 +85,7 @@ export class Voxel {
             }
 
             for (let i = 0; i < Face.length; i ++) {
-                this.spec.texture[i] = `${this.name}_${this.texList[i].getTexName()}.png`;
+                this.spec.texture[i] = `${this.spec.category}/${this.name}_${this.texList[i].getTexName()}`;
             }
 
             for (let i = 0; i < Thumbnail.length; i ++) {
