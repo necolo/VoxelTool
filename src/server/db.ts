@@ -2,14 +2,17 @@ import low = require('lowdb');
 import FileSync = require('lowdb/adapters/FileSync');
 import fs = require('fs');
 import path = require('path');
+import process = require('child_process');
 
 import { VoxelSpec, ServerHandlerI } from '../spec';
 
 const repo_path = path.join(__dirname, '../../');
 const voxel_path = path.join(repo_path, 'assets/voxel');
 
+const { exec, execSync } = process;
+
 export class ServerHandler implements ServerHandlerI {
-    public db:any;
+    public db:low.LowdbSync<any>;
     
     constructor () {
         const adapter = new FileSync('db.json');
@@ -37,9 +40,10 @@ export class ServerHandler implements ServerHandlerI {
         const { project, category, name } = spec;
 
         const projectDir = path.join(voxel_path, project);
-        const categoryDir = path.join(projectDir, category);
+        const projectVoxelDir = path.join(projectDir, 'voxel');
+        const categoryDir = path.join(projectVoxelDir, category);
 
-        checkDir([projectDir, categoryDir], () => {
+        checkDir([projectDir, projectVoxelDir, categoryDir], () => {
             const file = path.join(categoryDir, name + '.png');
             const buf = new Buffer(spec.texture.replace(/^data:image\/\w+;base64,/, ""), 'base64');
             fs.writeFile(file, buf, 'binary', (err) => {
@@ -80,7 +84,18 @@ export class ServerHandler implements ServerHandlerI {
         }
     }
 
-    public extractProject (project:string) {
+    public extract (project:string, next:(download_path:string) => void) {
+        const spec = this.db.get(`project.${project}.voxelSpec`).value();
+        const file = path.join(voxel_path, project, 'block-spec.json');
+        fs.writeFile(file, JSON.stringify(spec), 'utf8', (err) => {
+            if (err) throw err; 
 
+            execSync(`zip -r ${project}.zip ${project}`, {
+                cwd: voxel_path,
+            });
+
+            const zip_path = `assets/voxel/${project}.zip`;
+            next(zip_path);
+        })
     }
 }

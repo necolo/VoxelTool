@@ -168,6 +168,10 @@ export class ServerHandler implements ServerHandlerI {
     public saveImages (spec) {
         console.log('savefile:', spec.project, spec.category, spec.filename);
     }
+
+    public extract (project) {
+        console.log('extract', project);
+    }
 }
 
 const hub = new SocketHub();

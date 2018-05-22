@@ -13,7 +13,7 @@ export class ServerProtocol {
     
     constructor (socket:SocketInterface, serverHandler:ServerHandlerI) {
         this.socket = socket;
-        const { db, saveImages } = serverHandler;
+        const { db } = serverHandler;
 
         this.socket.sub(RequestId.category_list, (id, req:{project:string}) => {
             const res = db.get(`project.${req.project}.categoryList`).value(); 
@@ -54,7 +54,7 @@ export class ServerProtocol {
                 const name = texFaces[i];
                 const { texture, normal, specular, emissive } = req.tex[name];
 
-                saveImages({
+                serverHandler.saveImages({
                     project: req.project,
                     category: req.spec.category,
                     name: `${req.name}_${texFaces[i]}`,
@@ -89,7 +89,9 @@ export class ServerProtocol {
         })
 
         this.socket.sub(RequestId.download_project, (id, { project }) => {
-            //todo: 
+            serverHandler.extract(project, (download_path) => {
+                this.socket.send(id, download_path);
+            });
         })
     }
 

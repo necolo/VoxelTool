@@ -13,6 +13,7 @@ interface state {
 
 export class RightPanel extends React.Component<props, state> {
     public add_category_input:HTMLInputElement|null = null;
+    public element:HTMLElement|null = null;
 
     public componentDidMount() {
         this.props.ui.voxel.listener.subscribe(this);
@@ -26,7 +27,7 @@ export class RightPanel extends React.Component<props, state> {
         const { ui } = this.props;
 
         return (
-            <div className="right_container">
+            <div className="right_container" ref={ (e) => this.element = e }>
                 <div className="box">
                     <span>Category</span>
                     <CategorySelect
@@ -121,8 +122,15 @@ export class RightPanel extends React.Component<props, state> {
     }
 
     public handleDownloadProject = (ev) => {
-        this.props.ui.protocol.download_project((id, data) => {
-            //todo:
+        this.props.ui.protocol.download_project((id, download_path) => {
+            const element = document.createElement('a');
+            element.href = window.location.href + download_path;
+            element.download = this.props.ui.state.inProject + '.zip';
+            if (this.element) {
+                this.element.appendChild(element);
+                element.click();
+                this.element.removeChild(element);
+            }
         })
     }
 

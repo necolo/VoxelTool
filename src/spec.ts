@@ -53,4 +53,5 @@ export interface ServerHandlerI {
         normal:string,
         next?:() => void,
     }) => void;
+    extract: (project:string, next:(download_path:string) => void) => void;
 }
