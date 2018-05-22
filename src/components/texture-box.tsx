@@ -113,7 +113,7 @@ export class TextureBox extends React.Component<props, state> {
         const { face, ui } = this.props;
         const { blank } = ui.voxel;
         const tex = ui.voxel.texList[face];
-        const { texture, emissive, normal, specular } = tex.getSrc();
+        const { texture, emissive, normal, specular } = tex.getSource();
 
         return (
             <div className="texture_box">

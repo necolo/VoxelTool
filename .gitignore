@@ -5,3 +5,4 @@ bundle.js
 ./*.png
 ./*.jpg
 db.json
+assets/voxel/*

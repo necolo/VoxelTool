@@ -4,7 +4,6 @@ import path = require('path');
 import ecstatic = require('ecstatic');
 
 const WebSocketServer = require('uws').Server;
-import { db } from './server/db';
 
 import createServer = require('./server');
 import {
@@ -12,6 +11,7 @@ import {
     RequestId,
     MessageHandler,
 } from './spec';
+import { ServerHandler } from './server/db';
 
 
 export class ServerSocket implements SocketInterface {
@@ -60,7 +60,7 @@ const wss = new WebSocketServer({
 });
 const serverSocket = new ServerSocket();
 
-createServer(serverSocket, db);
+createServer(serverSocket, new ServerHandler());
 server.listen(PORT);
 
 console.log(`listening on: http://${ip.address()}:${PORT}`);

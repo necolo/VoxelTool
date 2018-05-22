@@ -6,7 +6,9 @@ import {
     MessageT,
     DBProject,
     MessageHandler,
+    ServerHandlerI,
 } from './spec';
+import { INSPECT_MAX_BYTES } from 'buffer';
 
 interface SocketHandler {
     onmessage:MessageHandler<any>[];
@@ -156,9 +158,20 @@ class DB {
     }
 }
 
-const db = new DB();
+export class ServerHandler implements ServerHandlerI {
+    public db:any;
+
+    constructor () {
+        this.db = new DB();
+    }
+
+    public saveImages (spec) {
+        console.log('savefile:', spec.project, spec.category, spec.filename);
+    }
+}
+
 const hub = new SocketHub();
 const clientSocket = new ClientSocket(hub);
 const serverSocket = new ServerSocket(hub);
-createServer(serverSocket, db);
+createServer(serverSocket, new ServerHandler());
 createClient(clientSocket);

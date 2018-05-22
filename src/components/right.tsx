@@ -50,15 +50,16 @@ export class RightPanel extends React.Component<props, state> {
                             ui.updateGL();
                         }}
                     />
+                    {/* <span style={{fontSize: '12px'}}>如果上传的图片有透明度，请勾上这里</span> */}
                 </div>
 
                 <div className="box">
-                    <span>color</span>
+                    <span>color(rgba)</span>
                     { this.renderNumberInputs(4, 'color') }
                 </div>
 
                 <div className="box">
-                    <span>emissive</span>
+                    <span>emissive(rgb)</span>
                     { this.renderNumberInputs(3, 'emissive') }
                 </div>
 
@@ -127,9 +128,7 @@ export class RightPanel extends React.Component<props, state> {
 
     public handleSaveVoxel = (ev) => {
         const { ui } = this.props;
-        ui.voxel.save(() => {
-            ui.voxel = new Voxel(ui.protocol);
-        })
+        ui.voxel.save();
     }
 
     public handleAddCategory = (ev) => {

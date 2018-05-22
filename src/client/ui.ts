@@ -49,7 +49,7 @@ export class UI {
         
         for (let i = 0; i < Face.length; i ++) {
             const tex = this.voxel.texList[i];
-            glSpec.tex[i] = tex.getSrc();
+            glSpec.tex[i] = tex.getSource();
         }
 
         this.glCube.texture(glSpec);

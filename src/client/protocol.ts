@@ -5,6 +5,8 @@ import {
     MessageHandler,
 } from '../spec';
 
+import { Voxel } from './voxel';
+import { Texture } from './texture';
 
 export class ClientProtocol {
     public socket:SocketInterface;
@@ -32,13 +34,23 @@ export class ClientProtocol {
         this.socket.send(id, req);
     }
 
-    public add_voxel(name:string, spec:VoxelSpec, cb:MessageHandler<boolean>) {
+    public add_voxel(voxel:Voxel, cb:MessageHandler<boolean>) {
         const id = RequestId.add_voxel;
+
         const req = {
             project: this.project,
-            name,
-            spec,
+            name: voxel.name,
+            spec: voxel.spec,
+            tex: {},
         }
+
+        for (let i = 0; i < voxel.texList.length; i ++) {
+            const tex = voxel.texList[i];
+            if (!tex.link) {
+                req.tex[tex.name] = tex.getSource();
+            }
+        }
+
         this.socket.sub(id, cb);
         this.socket.send(id, req);
     }

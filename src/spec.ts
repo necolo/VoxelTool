@@ -11,7 +11,6 @@ export enum RequestId {
 }
 
 export interface VoxelSpec {
-    id?:number;
     thumbnail:string[];
     texture:string[];
     transparent:boolean;
@@ -21,6 +20,10 @@ export interface VoxelSpec {
     restitution:number;
     mass:number;
     category:string;
+}
+
+export interface VoxelSpecInDB extends VoxelSpec {
+    id:number;
 }
 
 export type MessageT = (id:number, data:any) => void;
@@ -36,4 +39,18 @@ export interface DBProject {
     categoryList:string[];
     voxelSpec:{ [name:string]:VoxelSpec };
     id_count:number;
+}
+
+export interface ServerHandlerI {
+    db:any;
+    saveImages: (spec:{
+        project:string,
+        category:string,
+        name:string,
+        texture:string,
+        specular:string,
+        emissive:string,
+        normal:string,
+        next?:() => void,
+    }) => void;
 }

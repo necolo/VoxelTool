@@ -55,6 +55,12 @@ export class Texture {
         this.normal = '';
     }
 
+    public init() {
+        this.empty();
+        this.link = null;
+        this.listener.notify();
+    }
+
     public udpateTexture(src:string) {
         this.empty();
         this.texture = src;
@@ -86,14 +92,14 @@ export class Texture {
         Texture.updateUI(this, this._voxel.texList);
     }
 
-    public getSrc () : {
+    public getSource () : {
         texture: string;
         specular: string;
         emissive: string;
         normal: string;
     } {
         if (this.link) {
-            return this.link.getSrc();
+            return this.link.getSource();
         }
 
         return {
@@ -104,9 +110,9 @@ export class Texture {
         }
     }
 
-    public getName () : string {
+    public getTexName () : string {
         if (this.link) {
-            return this.link.getName();
+            return this.link.getTexName();
         }
 
         return this.name;

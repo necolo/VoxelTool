@@ -4,15 +4,16 @@ import {
     SocketInterface,
     MessageHandler,
     DBProject,
+    ServerHandlerI,
+    VoxelSpecInDB,
 } from '../spec';
 
 export class ServerProtocol {
     public socket:SocketInterface;
-    public db:any;
     
-    constructor (socket:SocketInterface, db:any) {
+    constructor (socket:SocketInterface, serverHandler:ServerHandlerI) {
         this.socket = socket;
-        this.db = db;
+        const { db, saveImages } = serverHandler;
 
         this.socket.sub(RequestId.category_list, (id, req:{project:string}) => {
             const res = db.get(`project.${req.project}.categoryList`).value(); 
@@ -27,13 +28,43 @@ export class ServerProtocol {
             this.socket.send(id, success);
         });
 
-        this.socket.sub(RequestId.add_voxel, (id, req:{project:string, name:string, spec:VoxelSpec}) => {
+        this.socket.sub(RequestId.add_voxel, (id, req:{
+            project:string, 
+            name:string, 
+            spec:VoxelSpec, 
+            tex:{[name:string]:{
+                texture:string,
+                normal:string,
+                specular:string,
+                emissive:string,
+            }}}) => {
+            console.log(req);
+
+            // save spec
             const project =`project.${req.project}` 
-            const project_id = db.get(`${project}.id_count`).value() + 1;
-            db.set(`${project}.id_count`, id).write();
-            const spec = req.spec;
-            spec['id'] = id;
+            const voxel_count = db.get(`${project}.id_count`).value() + 1;
+            db.set(`${project}.id_count`, voxel_count).write();
+            const spec:VoxelSpecInDB = req.spec as VoxelSpecInDB;
+            spec.id = voxel_count;
             db.get(`${project}.voxelSpec`).set(req.name, spec).write();
+            
+            // save the images
+            const texFaces = Object.keys(req.tex);
+            for(let i = 0; i < texFaces.length; i ++) {
+                const name = texFaces[i];
+                const { texture, normal, specular, emissive } = req.tex[name];
+
+                saveImages({
+                    project: req.project,
+                    category: req.spec.category,
+                    name: `${req.name}_${texFaces[i]}`,
+                    texture,
+                    specular,
+                    emissive,
+                    normal,
+                })
+            }
+
             this.socket.send(id, true);
         });
 

@@ -62,7 +62,18 @@ export class Voxel {
         }
     }
 
-    public save (next:() => void) {
+    public init () {
+        this.initSpec();
+        this.name = '';
+        this.blank = true;
+        this.listener.notify();
+
+        for (let tex of this.texList) {
+            tex.init();
+        }
+    }
+
+    public save () {
         if (!this.isSpecValid()) {
             return;
         } 
@@ -74,16 +85,16 @@ export class Voxel {
             }
 
             for (let i = 0; i < Face.length; i ++) {
-                this.spec.texture[i] = `${this.name}_${this.texList[i].getName()}`;
+                this.spec.texture[i] = `${this.name}_${this.texList[i].getTexName()}.png`;
             }
 
             for (let i = 0; i < Thumbnail.length; i ++) {
                 this.spec.thumbnail[i] = this.spec.texture[Face[Thumbnail[i]]];
             }
 
-            this.protocol.add_voxel(this.name, this.spec, (id, success) => {
+            this.protocol.add_voxel(this, (id, success) => {
                 if (success) {
-                    next();
+                    this.init();
                 } else {
                     alert('error: save failed');
                 }
@@ -101,6 +112,14 @@ export class Voxel {
             alert('error: name is empty');
             return false;
         }
+
+        const word = /\w+/;
+        const match = this.name.match(/\w+/g);
+        if (match && match.length !== 1) {
+            alert(`error: name is invalid\nOnly accepts English characters and '_'`);
+            return false;
+        }
+
 
         for (let i = 0; i < this.texList.length; i ++) {
             const tex = this.texList[i];
