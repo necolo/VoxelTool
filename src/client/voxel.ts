@@ -115,7 +115,7 @@ export class Voxel {
 
         const word = /\w+/;
         const match = this.name.match(/\w+/g);
-        if (match && match.length !== 1) {
+        if (!match || (match && match.length !== 1)) {
             alert(`error: name is invalid\nOnly accepts English characters and '_'`);
             return false;
         }

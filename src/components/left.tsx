@@ -52,6 +52,12 @@ export class LeftPanel extends React.Component<props, state> {
 
 
     public handleAddProject = (ev) => {
+        const validWord = this.state.add_project.match(/w+/g);
+        if (!validWord || (validWord && validWord.length !== 1)) {
+            alert('error: the new project name is invalid');
+            return;
+        }
+
         this.props.ui.protocol.new_project(this.state.add_project, (id, success) => {
             if (success) {
                 this.props.ui.update_projects();
