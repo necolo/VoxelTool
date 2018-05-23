@@ -167,10 +167,11 @@ export class ServerHandler implements ServerHandlerI {
 
     public saveImages (spec) {
         console.log('savefile:', spec.project, spec.category, spec.filename);
+        console.log('save file function not avaliable in local test mode');
     }
 
     public extract (project, next:(download_path:string) => void) {
-        console.log('extract', project);
+        console.log('extract function not avaliable in local test mode')
     }
 }
 
