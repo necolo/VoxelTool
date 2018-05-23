@@ -96,10 +96,8 @@ export class ServerHandler implements ServerHandlerI {
 
         const dir = dirs[count]; 
         if (!fs.existsSync(dir)) {
-            fs.mkdir(dir, (err) => {
-                if (err) throw err;
-                this._mkdir(dirs, next, ++count)
-            })
+            fs.mkdirSync(dir);
+            this._mkdir(dirs, next, ++count)
         } else {
             this._mkdir(dirs, next, ++count);
         }

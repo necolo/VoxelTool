@@ -1,3 +1,50 @@
+#btn() {
+    .full_width {
+        width: 100%;
+    }
+
+    .green {
+        background-color: #4CAF50;
+        color: white;          
+    }
+
+    .orange {
+        background-color: rgb(226, 98, 13);
+        color: white;            
+    }
+
+    .blue {
+        background-color: #0288D1;
+        color: white;
+    }
+}
+
+.btn_full {
+    #btn > .blue;
+    #btn > .full_width;
+    height: 30px;
+}
+
+.btn_normal {
+    #btn > .green;
+    height: 20px;
+}
+
+.btn_long {
+    height: 30px;
+    width: 300px;
+}
+
+.btn_short {
+    height: 30px;
+    width: 100px;
+}
+
+.line_space {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
 .container {
     display: flex;
 
@@ -20,8 +67,7 @@
 
         .project_item_selected {
             .project_item;
-            background-color: rgb(226, 98, 13);
-            color: white;
+            #btn > .orange; 
         }
 
         .add_project {
@@ -33,10 +79,7 @@
             }
 
             button {
-                width: 100%;
-                height: 25px;
-                background: #4CAF50;
-                color: white;
+                .btn_full;
                 margin-top: 5px;
             }
         }
@@ -97,17 +140,8 @@
 
             .btn_send {
                 margin-left: 5px;
-                background: #E91E63;
-                color: white;
-                height: 20px;
+                .btn_normal;
             }
-        }
-
-        .btn_save {
-            width: 100%;
-            height: 30px;
-            color: white;
-            background: #4CAF50;
         }
     }
 }

@@ -89,7 +89,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             view: regl.context('view'),
             lightColor: [1.0, 1.0, 1.0],
             lightPosition: [20, 0, 0],
-            ambientLight: [0.2, 0.2, 0.2],
+            ambientLight: [0.8, 0.8, 0.8],
         },
         elements: [
             0, 1, 2,   0, 2, 3,    // front

@@ -91,6 +91,9 @@ export class RightPanel extends React.Component<props, state> {
                     />
                 </div>
 
+                <button className="btn_short"
+                    onClick={() =>this.props.ui.voxel.init()}>Clear</button>
+
                 <br />
                 <hr />
                 
@@ -108,12 +111,12 @@ export class RightPanel extends React.Component<props, state> {
                     <button className="btn_send" onClick={this.handleAddCategory}>send</button>
                 </div>
 
-                <button className="btn_save"
+                <button className="btn_long line_space"
                     onClick={this.handleSaveVoxel}>
                     SAVE
                 </button>
 
-                <button className="btn_save" 
+                <button className="btn_long line_space" 
                     onClick={this.handleDownloadProject}>
                     Download project
                 </button>

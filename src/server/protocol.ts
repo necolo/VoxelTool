@@ -38,7 +38,6 @@ export class ServerProtocol {
                 specular:string,
                 emissive:string,
             }}}) => {
-            console.log(req);
 
             // save spec
             const project =`project.${req.project}` 
@@ -69,7 +68,6 @@ export class ServerProtocol {
         });
 
         this.socket.sub(RequestId.new_project, (id, req:{project:string}) => {
-            console.log('new project', req);
             db.set(`project.${req.project}`, this.allocProject()).write();
             this.socket.send(id, true);
         });

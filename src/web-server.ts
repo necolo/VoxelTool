@@ -26,7 +26,6 @@ export class ServerSocket implements SocketInterface {
         wss.on('connection', function (ws) {
             self._ws = ws;
             ws.on('message', (msg) => {
-                console.log('receive:', msg);
                 const { id, data } = JSON.parse(msg);
                 self.onmessage[id](id, data);
             })
