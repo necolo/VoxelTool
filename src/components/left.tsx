@@ -50,7 +50,6 @@ export class LeftPanel extends React.Component<props, state> {
         )
     }
 
-
     public handleAddProject = (ev) => {
         const validWord = this.state.add_project.match(/w+/g);
         if (!validWord || (validWord && validWord.length !== 1)) {

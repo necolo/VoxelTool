@@ -99,7 +99,7 @@ export class Voxel {
                     alert('error: save failed');
                 }
             })           
-        })              
+        })
     }
 
     public isSpecValid () : boolean {

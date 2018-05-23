@@ -169,7 +169,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
 
             process = () => basicCube(undefined, () => drawCube());
         },
-        texture: (spec) => {
+        texture: (spec:GLTextureSpec) => {
             const drawCube = regl({
                 vert: `
                 attribute vec3 position, color, normal;
@@ -201,7 +201,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     vec3 diffuse = textureColor.rgb * nDotL;
                     vec3 ambient = ambientLight * textureColor.rgb;
 
-                    gl_FragColor = vec4(diffuse + ambient, ${spec.transparent ? '0.3' : '1.0'});
+                    gl_FragColor = vec4(diffuse + ambient, textureColor.a);
                 } 
                 `,
                 uniforms: {
