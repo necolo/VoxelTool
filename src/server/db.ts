@@ -25,6 +25,12 @@ export class ServerHandler implements ServerHandlerI {
                 id_count: 0,
             },
         }}).write();
+
+        // check assets/voxel directory
+        this._mkdir([
+            path.join(repo_path, 'assets'),
+            voxel_path,
+        ])
     }
 
     public saveImages (spec:{
@@ -43,7 +49,7 @@ export class ServerHandler implements ServerHandlerI {
         const projectVoxelDir = path.join(projectDir, 'voxel');
         const categoryDir = path.join(projectVoxelDir, category);
 
-        checkDir([projectDir, projectVoxelDir, categoryDir], () => {
+        this._mkdir([projectDir, projectVoxelDir, categoryDir], () => {
             const file = path.join(categoryDir, name + '.png');
             const buf = new Buffer(spec.texture.replace(/^data:image\/\w+;base64,/, ""), 'base64');
             fs.writeFile(file, buf, 'binary', (err) => {
@@ -55,23 +61,6 @@ export class ServerHandler implements ServerHandlerI {
             _save('emissive');
             _save('specular');
         });
-
-        function checkDir (dirs:string[], next:() => void, count:number = 0) {
-            if (count >= dirs.length) {
-                next();
-                return;
-            }
-
-            const dir = dirs[count]; 
-            if (!fs.existsSync(dir)) {
-                fs.mkdir(dir, (err) => {
-                    if (err) throw err;
-                    checkDir(dirs, next, ++count)
-                })
-            } else {
-                checkDir(dirs, next, ++count);
-            }
-        }
 
         function _save (type:string) {
             if (!spec[type]) { return; }
@@ -97,5 +86,22 @@ export class ServerHandler implements ServerHandlerI {
             const zip_path = `assets/voxel/${project}.zip`;
             next(zip_path);
         })
+    }
+
+    private _mkdir (dirs:string[], next?:() => void, count:number = 0) {
+        if (count >= dirs.length) {
+            if (next) { next(); }
+            return;
+        }
+
+        const dir = dirs[count]; 
+        if (!fs.existsSync(dir)) {
+            fs.mkdir(dir, (err) => {
+                if (err) throw err;
+                this._mkdir(dirs, next, ++count)
+            })
+        } else {
+            this._mkdir(dirs, next, ++count);
+        }
     }
 }
