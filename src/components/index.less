@@ -1,4 +1,12 @@
+#input() {
+    .short {
+        border-radius: 30px;
+        width: 35px;
+    }
+}
+
 #btn() {
+    border-radius: 30px;
     .full_width {
         width: 100%;
     }
@@ -20,22 +28,24 @@
 }
 
 .btn_full {
-    #btn > .blue;
+    #btn;
     #btn > .full_width;
     height: 30px;
 }
 
 .btn_normal {
-    #btn > .green;
+    #btn;
     height: 20px;
 }
 
 .btn_long {
+    #btn; 
     height: 30px;
     width: 300px;
 }
 
 .btn_short {
+    #btn;
     height: 30px;
     width: 100px;
 }
@@ -53,6 +63,7 @@
         width: 200px;
 
         .project_item {
+            #btn;
             padding: 5px;
             text-align: center;
             border-bottom: 1px grey double;
@@ -75,6 +86,7 @@
             text-align: center;
 
             input {
+                #input;
                 width: 100%;
             }
 
@@ -125,6 +137,10 @@
     .right_container {
         flex: 1;
         text-align: left;
+        
+        input {
+            #input;
+        }
 
         .box {
             margin: 15px;
@@ -134,7 +150,8 @@
             }
 
             .number_input {
-                width: 35px;
+                #input;
+                #input > .short;
                 margin-right: 5px;
             }
 
