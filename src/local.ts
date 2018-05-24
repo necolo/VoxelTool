@@ -101,7 +101,6 @@ class DB {
     }
 
     public get(msg:string) {
-        console.log('get: ', msg);
         const props = msg.split('.');
         this._initValue();
         this._value = this._getValue(props, this.data, 0);
@@ -109,13 +108,11 @@ class DB {
     } 
 
     public value() {
-        console.log('value: ', this._value);
         this._should_reset = true;
         return this._value;
     }
 
     public push(obj) {
-        console.log('push: ', obj);
         this._initValue();
         this._value.push(obj);
         return this;
@@ -127,7 +124,6 @@ class DB {
     }
 
     public set(msg:string, data:any) {
-        console.log('set: ', msg, data);
         this._initValue();
         const props = msg.split('.');
         const setValue = props.pop();
