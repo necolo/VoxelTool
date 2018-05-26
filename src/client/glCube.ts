@@ -1,5 +1,4 @@
 import { mat4 } from 'gl-matrix';
-import { ControlBox } from 'control-box';
 
 import { Face } from './texture';
 import { glMouse } from './glMouse';
@@ -53,8 +52,6 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
     mouse.preset({
         camera: [0, 0, 8],
     })
-
-    const box = new ControlBox();
 
     const basicCube = regl({
         attributes: {
