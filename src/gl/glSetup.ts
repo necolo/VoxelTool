@@ -29,7 +29,7 @@ const TEXTURE_COOR:[number, number][] = [
     [1.0, 0.0],
 ]
 
-export function glSetup (regl, mouse) {
+export function glSetup (regl, mouse:MouseT) {
     return regl({
         attributes: {
             position: insertArray(POSITION, [
@@ -59,6 +59,9 @@ export function glSetup (regl, mouse) {
                     100.0,
                 ),
             view: () => mouse.view(),
+            lightColor: regl.prop('light'),
+            lightPosition: regl.prop('lightPosition'),
+            ambientLight: regl.prop('ambientLight'),
         },
         elements: [
             0, 1, 2,   0, 2, 3,    // front
@@ -68,7 +71,7 @@ export function glSetup (regl, mouse) {
            16,17,18,  16,18,19,    // down
            20,21,22,  20,22,23     // back              
         ],
-    })
+    });
 }
 
 function insertArray (insert:number[][], order:number[]) : number[][] {

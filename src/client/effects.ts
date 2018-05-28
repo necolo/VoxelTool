@@ -12,7 +12,7 @@ export class Effects {
     constructor () {
         this.light = [1.0, 1.0, 1.0];
         this.lightPosition = [20, 0, 0];
-        this.ambientLight = [0.2, 0.2, 0.2];
+        this.ambientLight = [0.8, 0.8, 0.8];
         this.onLight = true;
         this.onAmbient = true;
     }

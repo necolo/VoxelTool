@@ -32,23 +32,33 @@ export type glMainT = {
     texture: (spec:GLTextureSpec) => void,
 }
 
+export enum CubeType {
+    empty,
+    texture,
+}
+
 export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
-    const drawEmptyCube = glEmptyCube(regl);
-    const drawTexCube = glTexCube(regl);
-    const drawLight = glLight();
-    const drawAmbient = glAmbient();
     const cache = glCache();
     const setup = glSetup(regl, mouse);
+    const drawEmptyCube = glEmptyCube(regl);
+    const texCube = glTexCube(regl);
+    const drawLight = glLight(cache, ui);
+    const drawAmbient = glAmbient(cache, ui);
 
     mouse.preset({
         camera: [0, 0, 8],
     });
     
     let drawCube = drawEmptyCube;
+    let drawTexCube;
 
-    regl.frame(() => {
+    let type:CubeType = CubeType.empty;
+
+    const { light, lightPosition, ambientLight } = ui.effects;
+
+    function run() {
         regl.clear({
             depth: 1,
             color: [0, 0, 0, 1],
@@ -56,10 +66,28 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
         
         mouse.tick();
 
-        drawLight(cache);
-        drawAmbient(cache);
-        
-        setup(undefined, () => draw(drawCube, cache));
+        const envSpec = {
+            light,
+            lightPosition,
+            ambientLight,
+        }
+
+        drawLight();
+        drawAmbient();
+
+        if (type === CubeType.empty) {
+            setup(envSpec, () => drawEmptyCube(cache));
+        }
+
+        else {
+            setup(envSpec, () => drawTexCube(cache));
+        }
+    }
+
+    run();
+
+    regl.frame(() => {
+
     });
 
     return {
@@ -67,11 +95,7 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
             drawCube = drawEmptyCube;
         },
         texture: (spec) => {
-            drawCube = drawTexCube(spec);
+            drawTexCube = texCube(spec, type);
         },
     }
-}
-
-function draw (drawCube, cache) {
-    drawCube(cache);
 }

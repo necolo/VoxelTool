@@ -1,13 +1,30 @@
+import { glCacheFunc } from './glCache';
+
 export function glEmptyCube(regl) {
-    return function (cache) {
+    return function (cache:glCacheFunc) {
+        cache.set('base', {
+            vert: {
+                prefix: `
+                attribute vec3 color;
+                varying vec3 v_color;
+                `,
+                main: `
+                v_color = color;
+                `,
+            },
+            frag: {
+                prefix: `
+                varying vec3 v_color;
+                `,
+                main: `
+                gl_FragColor = vec4(v_color, 1.);
+                `,
+            }
+        });
+
         regl({
             vert: regl.prop('vert'),
             frag: regl.prop('frag'),
-            uniforms: {
-                lightColor: regl.prop('light'),
-                lightPosition: regl.prop('lightPosition'),
-                ambientLight: regl.prop('ambientLight'),
-            },
             attributes: {
                 color: [
                     0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  // v0-v1-v2-v3 front(purple)
@@ -25,6 +42,6 @@ export function glEmptyCube(regl) {
                     dst: 'one minus src alpha',
                 }
             },
-        })(cache.result);
+        })(cache.build());
     }
 }

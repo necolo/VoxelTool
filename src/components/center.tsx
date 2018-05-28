@@ -1,8 +1,8 @@
 import * as React from 'react';
 
 import { UI } from '../client/ui';
-import { glCube } from '../client/glCube';
 import { Face } from '../client/texture';
+import { glMain } from '../gl/main';
 
 import { TextureBox } from './texture-box';
 
@@ -25,7 +25,7 @@ export class MiddlePanel extends React.Component<props, state> {
             return;
         }
 
-        const cube = glCube(this.canvasElement, this.props.ui);
+        const cube = glMain(this.canvasElement, this.props.ui);
         this.props.ui.glCube = cube;
         cube.empty();
     }
