@@ -4,6 +4,8 @@ import { UI } from '../client/ui';
 import { Face } from '../client/texture';
 import { Voxel, Thumbnail } from '../client/voxel';
 
+import { EffectUI } from './effect';
+
 interface props {
     ui:UI;
 }
@@ -28,6 +30,12 @@ export class RightPanel extends React.Component<props, state> {
 
         return (
             <div className="right_container" ref={ (e) => this.element = e }>
+                <EffectUI ui={ui} />
+                <br />
+                <hr />
+
+                <h3>Specs:</h3>
+
                 <div className="box">
                     <span>Category</span>
                     <CategorySelect
@@ -56,12 +64,20 @@ export class RightPanel extends React.Component<props, state> {
 
                 <div className="box">
                     <span>color(rgba)</span>
-                    { this.renderNumberInputs(4, 'color') }
+                    { renderNumberInputs({
+                        length: 4,
+                        target: ui.voxel.spec.color,
+                        onChange: (value, i) => ui.voxel.updateSpec('color', value, i) }) 
+                    }
                 </div>
 
                 <div className="box">
                     <span>emissive(rgb)</span>
-                    { this.renderNumberInputs(3, 'emissive') }
+                    { renderNumberInputs({
+                        length: 3,
+                        target: ui.voxel.spec.emissive,
+                        onChange: (value, i) => ui.voxel.updateSpec('emissive', value, i),
+                    })}
                 </div>
 
                 <div className="box">
@@ -156,24 +172,29 @@ export class RightPanel extends React.Component<props, state> {
             )
         }
     }
+}
 
-    public renderNumberInputs (length:number, target:string) : JSX.Element[] {
-        const res:JSX.Element[] = [];
-        for (let i = 0; i < length; i ++) {
-            res.push(
-                <input type="number" 
-                    key={i}
-                    className="number_input"
-                    value={this.props.ui.voxel.spec[target][i]}
-                    onChange={(ev) => {
-                        const value = ev.target.value;
-                        this.props.ui.voxel.updateSpec(target, value, i);
-                    }}
-                />
-            )
-        }
-        return res;
+export function renderNumberInputs (spec:{
+    length:number,
+    target:any,
+    onChange:(value:string, index:number) => void;
+    className?:string,
+    style?:{},
+}) : JSX.Element[] {
+    const res:JSX.Element[] = [];
+    for (let i = 0; i < spec.length; i ++){
+        res.push(
+            <input type="number"
+                key={i}
+                className={spec.className || 'number_input'}
+                style={spec.style || {}}
+                value={spec.target[i]}
+                onChange={(ev) => {
+                    spec.onChange(ev.target.value, i);
+                }} />
+        )
     }
+    return res;
 }
 
 interface CategorySelectState {

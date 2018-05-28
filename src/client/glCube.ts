@@ -1,35 +1,11 @@
 import { mat4 } from 'gl-matrix';
-import { ControlBox } from 'control-box';
 
+import { UI } from './ui';
 import { Face } from './texture';
 import { glMouse } from './glMouse';
+import { Effects } from './effects';
+import { glsl, createGLSL } from './glsl';
 
-  // cube points
-  //    v6----- v5
-  //   /|      /|
-  //  v1------v0|
-  //  | |     | |
-  //  | |v7---|-|v4
-  //  |/      |/
-  //  v2------v3
-
-const POSITION:[number, number, number][] = [
-    [1.0, 1.0, 1.0],
-    [-1.0, 1.0, 1.0],
-    [-1.0, -1.0, 1.0],
-    [1.0, -1.0, 1.0],
-    [1.0, -1.0, -1.0],
-    [1.0, 1.0, -1.0],
-    [-1.0, 1.0, -1.0],
-    [-1.0, -1.0, -1.0],
-]
-
-const TEXTURE_COOR:[number, number][] = [
-    [1.0, 1.0],
-    [0.0, 1.0],
-    [0.0, 0.0],
-    [1.0, 0.0],
-]
 
 export type GLTextureSpec = {
     tex:{[face:number]:{
@@ -44,9 +20,10 @@ export type GLTextureSpec = {
 export type DrawCubeT = {
     empty: () => void,
     texture: (spec:GLTextureSpec) => void,  
+    effect: (effects:Effects) => void,
 }
 
-export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
+export function glCube (canvas:HTMLCanvasElement, ui:UI) : DrawCubeT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
 
@@ -54,7 +31,7 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
         camera: [0, 0, 8],
     })
 
-    const box = new ControlBox();
+    const { effects } = ui;
 
     const basicCube = regl({
         attributes: {
@@ -66,14 +43,6 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                 7, 4, 3, 2,
                 4, 7, 6, 5,
             ]),
-            color: [
-                0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  // v0-v1-v2-v3 front(purple)
-                0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  // v0-v3-v4-v5 right(green)
-                1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  // v0-v5-v6-v1 up(red)
-                1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  // v1-v6-v7-v2 left(yellow)
-                1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down(white)
-                0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back(blue)
-            ],
             normal: [
                 0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
                 1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,  // v0-v3-v4-v5 right
@@ -84,22 +53,6 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             ],
         },
         uniforms: {
-            model: regl.context('model'),
-            projection: regl.context('projection'),
-            view: regl.context('view'),
-            lightColor: [1.0, 1.0, 1.0],
-            lightPosition: [20, 0, 0],
-            ambientLight: [0.8, 0.8, 0.8],
-        },
-        elements: [
-            0, 1, 2,   0, 2, 3,    // front
-            4, 5, 6,   4, 6, 7,    // right
-            8, 9,10,   8,10,11,    // up
-           12,13,14,  12,14,15,    // left
-           16,17,18,  16,18,19,    // down
-           20,21,22,  20,22,23     // back  
-        ],
-        context: {
             model: mat4.create(),
             projection: ({viewportWidth, viewportHeight}) => 
                 mat4.perspective(
@@ -110,7 +63,18 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                     100.0,
                 ),
             view: () => mouse.view(),
-        }
+            lightColor: regl.prop('lightColor'),
+            lightPosition: regl.prop('lightPosition'),
+            ambientLight: regl.prop('ambientLight'),
+        },
+        elements: [
+            0, 1, 2,   0, 2, 3,    // front
+            4, 5, 6,   4, 6, 7,    // right
+            8, 9,10,   8,10,11,    // up
+           12,13,14,  12,14,15,    // left
+           16,17,18,  16,18,19,    // down
+           20,21,22,  20,22,23     // back  
+        ],
     })
 
     let process:() => void = () => {}; 
@@ -121,42 +85,41 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             color: [0, 0, 0, 1],
         })
         mouse.tick();
-        process();
+
+        basicCube({
+            lightColor: effects.light,
+            lightPosition: effects.lightPosition,
+            ambientLight: effects.ambientLight,            
+        }, () => process());
     })
 
     return {
         empty: () => {
             const drawCube = regl({
                 vert: `
-                attribute vec3 position, color, normal;
-                uniform mat4 model, projection, view;
-                varying vec4 v_cameraPosition;
-                varying vec3 v_normaled, v_color;
-            
-                void main() {
-                  vec4 cameraPosition = view * vec4(position, 1.);
-                  gl_Position = projection * cameraPosition;
-
-                  vec3 normaled = normalize((view * vec4(normal, 0.)).xyz);
-                  v_color = color;
-                  v_normaled = normaled;
-                  v_cameraPosition = cameraPosition;
+                ${glsl.prefix.vert}
+                ${glsl.light.vert}
+                attribute vec3 color;
+                varying vec3 v_color;
+        
+                void main () {
+                    runPrefix();
+                    runLight();
+        
+                    v_color = color;
                 }
                 `,
                 frag: `
-                precision mediump float;
-                uniform vec3 lightColor, lightPosition, ambientLight;
-                varying vec3 v_normaled, v_color;
-                varying vec4 v_cameraPosition;
-
-                void main() {
-                    vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
-                    float nDotL = max(dot(lightDirection, v_normaled), 0.);
-                    vec3 diffuse = lightColor * v_color * nDotL;
-                    vec3 ambient = ambientLight * v_color.rgb;
-
-                    gl_FragColor = vec4(diffuse + ambient, 1.);
-                } 
+                ${glsl.prefix.frag}
+                ${glsl.light.frag}
+                ${glsl.ambient.frag}
+                varying vec3 v_color;
+        
+                void main () {
+                    vec3 light = getLight(v_color);
+                    vec3 ambient = getAmbient(v_color);
+                    gl_FragColor = vec4(light + ambient, 1.);
+                }
                 `,
                 blend: {
                     enable: true,
@@ -165,44 +128,46 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                         dst: 'one minus src alpha',
                     }
                 },
+                attributes: {
+                    color: [
+                        0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  0.4, 0.4, 1.0,  // v0-v1-v2-v3 front(purple)
+                        0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  0.4, 1.0, 0.4,  // v0-v3-v4-v5 right(green)
+                        1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  1.0, 0.4, 0.4,  // v0-v5-v6-v1 up(red)
+                        1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  1.0, 1.0, 0.4,  // v1-v6-v7-v2 left(yellow)
+                        1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  // v7-v4-v3-v2 down(white)
+                        0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0,  0.4, 1.0, 1.0   // v4-v7-v6-v5 back(blue)
+                    ],
+                }
             });
 
-            process = () => basicCube(undefined, () => drawCube());
+            process = () => drawCube();
         },
         texture: (spec:GLTextureSpec) => {
             const drawCube = regl({
                 vert: `
-                attribute vec3 position, color, normal;
-                uniform mat4 model, projection, view;
-                varying vec3 v_textureCoor;
-                varying vec4 v_cameraPosition;
-                varying vec3 v_normaled;
-            
-                void main() {
-                  vec4 cameraPosition = view * vec4(position, 1.);
-                  gl_Position = projection * cameraPosition;
-
-                  v_textureCoor = position;
-                  v_cameraPosition = cameraPosition;
-                  v_normaled = normalize((view * vec4(normal, 0.)).xyz);
+                ${glsl.prefix.vert}
+                ${glsl.light.vert}
+                varying vec3 v_texCoord;
+        
+                void main () {
+                    runPrefix();
+                    runLight();
+                    v_texCoord = position;
                 }
                 `,
                 frag: `
-                precision mediump float;
-                uniform samplerCube cube; 
-                uniform vec3 lightColor, lightPosition, ambientLight;
-                varying vec3 v_textureCoor, v_normaled;
-                varying vec4 v_cameraPosition;
+                ${glsl.prefix.frag}
+                ${glsl.light.frag}
+                ${glsl.ambient.frag}
+                varying vec3 v_texCoord;
+                uniform samplerCube cube;
         
-                void main() {
-                    vec4 textureColor = textureCube(cube, v_textureCoor);
-                    vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
-                    float nDotL = max(dot(lightDirection, v_normaled), 0.);
-                    vec3 diffuse = textureColor.rgb * nDotL;
-                    vec3 ambient = ambientLight * textureColor.rgb;
-
-                    gl_FragColor = vec4(diffuse + ambient, textureColor.a);
-                } 
+                void main () {
+                    vec4 color = textureCube(cube, v_texCoord);
+                    vec3 light = getLight(color.xyz);
+                    vec3 ambient = getAmbient(color.xyz);
+                    gl_FragColor = vec4(light + ambient, color.a);
+                }
                 `,
                 uniforms: {
                     cube: regl.prop('cube'),
@@ -241,22 +206,22 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
                         alert('the image size is incorrect');
                         return;
                     }
-                    process = () => basicCube(undefined, () => drawCube({
+                    process = () => drawCube({
                         cube: regl.cube(...faces),
-                    }))
+                    });
                 }
+            }
+        },
+        effect: (effects) => {
+            const { onLight, onAmbient } = effects;
+
+            if (!onLight && !onAmbient) {
+                
             }
         },
     }
 }
 
-function insertArray (insert:number[][], order:number[]) : number[][] {
-    const res:number[][] = [];
-    for (let i = 0; i < order.length; i ++) {
-        res.push(insert[order[i]]);         
-    }
-    return res;
-}
 
 function allTheSame (compileList:any[], props:string[]) : boolean {
     const data1 = {};

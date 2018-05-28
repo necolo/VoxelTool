@@ -1,5 +1,4 @@
 import { mat4, vec3, vec2 } from 'gl-matrix';
-import { get } from 'https';
 
 export type Vector3 = [number, number, number];
 

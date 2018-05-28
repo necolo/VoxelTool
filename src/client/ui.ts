@@ -4,6 +4,7 @@ import { UIListener } from './uiListener';
 import { ClientProtocol } from './protocol';
 import { Texture, Face } from './texture';
 import { Voxel, Thumbnail } from './voxel';
+import { Effects } from './effects';
 
 export interface UIState {
     categoryList:string[];
@@ -17,6 +18,7 @@ export class UI {
 
     public protocol:ClientProtocol;
     public voxel:Voxel;
+    public effects:Effects;
     public glCube:any;
 
     public state:UIState = {
@@ -28,6 +30,7 @@ export class UI {
     constructor(protocol:ClientProtocol) {
         this.protocol = protocol;
         this.voxel = new Voxel(protocol);
+        this.effects = new Effects();
 
         (window as any).ui = this;
 
