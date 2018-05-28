@@ -25,7 +25,7 @@ export class MiddlePanel extends React.Component<props, state> {
             return;
         }
 
-        const cube = glCube(this.canvasElement);
+        const cube = glCube(this.canvasElement, this.props.ui);
         this.props.ui.glCube = cube;
         cube.empty();
     }

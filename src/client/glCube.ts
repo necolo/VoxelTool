@@ -1,7 +1,10 @@
 import { mat4 } from 'gl-matrix';
 
+import { UI } from './ui';
 import { Face } from './texture';
 import { glMouse } from './glMouse';
+import { Effects } from './effects';
+
 
   // cube points
   //    v6----- v5
@@ -45,9 +48,11 @@ export type DrawCubeT = {
     texture: (spec:GLTextureSpec) => void,  
 }
 
-export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
+export function glCube (canvas:HTMLCanvasElement, ui:UI) : DrawCubeT {
     const regl = require('regl')(canvas);
     const mouse = glMouse(canvas);
+
+    const { voxel, effects } = ui;
 
     mouse.preset({
         camera: [0, 0, 8],
@@ -84,9 +89,9 @@ export function glCube (canvas:HTMLCanvasElement, texture?:string) : DrawCubeT {
             model: regl.context('model'),
             projection: regl.context('projection'),
             view: regl.context('view'),
-            lightColor: [1.0, 1.0, 1.0],
-            lightPosition: [20, 0, 0],
-            ambientLight: [0.2, 0.2, 0.2],
+            lightColor: effects.light,
+            lightPosition: effects.lightPosition,
+            ambientLight: effects.ambientLight,
         },
         elements: [
             0, 1, 2,   0, 2, 3,    // front
