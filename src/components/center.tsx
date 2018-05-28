@@ -19,14 +19,11 @@ export class MiddlePanel extends React.Component<props, state> {
     public componentDidMount() {
         if (!this.canvasElement) { return; }
 
-        const gl = this.canvasElement.getContext('webgl');
-        if (!gl) {
-            alert("your browser not support WebGL");
-            return;
-        }
+        const { ui } = this.props;
 
-        const cube = glMain(this.canvasElement, this.props.ui);
-        this.props.ui.glCube = cube;
+        const cube = glMain(this.canvasElement, ui);
+        ui.glCube = cube;
+        ui.effects.add_glCube(cube);
         cube.empty();
     }
 

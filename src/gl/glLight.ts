@@ -2,9 +2,8 @@ import { glCacheFunc } from './glCache';
 import { UI } from '../client/ui';
 
 export function glLight(cache:glCacheFunc, ui:UI) {
-    const { onLight } = ui.effects;
-
     return function () {
+        const { onLight } = ui.effects;
         if (onLight) {
             cache.set('light', {
                 vert: {

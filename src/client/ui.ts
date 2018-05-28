@@ -5,6 +5,7 @@ import { ClientProtocol } from './protocol';
 import { Texture, Face } from './texture';
 import { Voxel, Thumbnail } from './voxel';
 import { Effects } from './effects';
+import { glMainT } from '../gl/main';
 
 export interface UIState {
     categoryList:string[];
@@ -19,7 +20,7 @@ export class UI {
     public protocol:ClientProtocol;
     public voxel:Voxel;
     public effects:Effects;
-    public glCube:any;
+    public glCube!:glMainT;
 
     public state:UIState = {
         categoryList: [],
@@ -30,7 +31,7 @@ export class UI {
     constructor(protocol:ClientProtocol) {
         this.protocol = protocol;
         this.voxel = new Voxel(protocol);
-        this.effects = new Effects();
+        this.effects = new Effects(this.glCube);
 
         (window as any).ui = this;
 

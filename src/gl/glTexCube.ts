@@ -1,8 +1,6 @@
 import { Face } from '../client/texture';
 import { glCacheFunc } from './glCache';
 
-import { CubeType } from './main';
-
 export type GLTextureSpec = {
     tex:{[face:number]:{
         texture:string;
@@ -13,8 +11,8 @@ export type GLTextureSpec = {
     transparent:boolean,
 }
 
-export function glTexCube (regl) {
-    return function (spec:GLTextureSpec, type:CubeType) {
+export function glTexCube (regl, cache:glCacheFunc) {
+    return function (spec:GLTextureSpec, drawCube:any) {
         let count = 0;
         const faces:HTMLImageElement[] = new Array(6);
         // posX, negX, posY, negY, posZ, negZ
@@ -31,9 +29,44 @@ export function glTexCube (regl) {
         faces[4].src = spec.tex[Face.front].texture;
         faces[5].src = spec.tex[Face.back].texture;
 
-        const glspec = {
+        cache.set('base', {
+            vert: {
+                prefix: `
+                varying vec3 v_texCoord,
+                `,
+                main: `
+                v_texCoord = position;
+                `,
+            },
+            frag: {
+                prefix: `
+                varying vec3 v_texCoord;
+                uniform samplerCube cube;
+                `,
+                main: `
+                gl_FragColor = textureCube(cube, v_texCoord); 
+                `,
+            },
+        });
+
+        const glSpec = Object.assign(cache.build(), {
             cube: regl.cube(...faces),
-        }
+        });
+
+        const draw = regl({
+            vert: regl.prop('vert'),
+            frag: regl.prop('frag'),
+            uniforms: {
+                cube: regl.prop('cube'),
+            },
+            blend: {
+                enable: true,
+                func: {
+                    src: 1,
+                    dst: 'one minus src alpha',
+                }
+            }            
+        })
 
         function run() {
             if (count < 5) {
@@ -44,45 +77,10 @@ export function glTexCube (regl) {
                     return;
                 }
 
-                type = CubeType.texture;
-            }    
-        }
-
-        return function (cache) {
-            cache.set('base', {
-                vert: {
-                    prefix: `
-                    varying vec3 v_texCoord,
-                    `,
-                    main: `
-                    v_texCoord = position;
-                    `,
-                },
-                frag: {
-                    prefix: `
-                    varying vec3 v_texCoord;
-                    uniform samplerCube cube;
-                    `,
-                    main: `
-                    gl_FragColor = textureCube(cube, v_texCoord); 
-                    `,
-                },
-            });
-
-            regl({
-                vert: regl.prop('vert'),
-                frag: regl.prop('frag'),
-                uniforms: {
-                    cube: regl.prop('cube'),
-                },
-                blend: {
-                    enable: true,
-                    func: {
-                        src: 1,
-                        dst: 'one minus src alpha',
-                    }
+                drawCube = () => {
+                    draw(glSpec);
                 }
-            })(Object.assign(cache.build(), glspec));
+            }    
         }
     }
 }

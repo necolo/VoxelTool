@@ -30,6 +30,7 @@ export type glslT = {
 export type glMainT = {
     empty: () => void,
     texture: (spec:GLTextureSpec) => void,
+    reload: () => void,
 }
 
 export enum CubeType {
@@ -42,8 +43,8 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
     const mouse = glMouse(canvas);
     const cache = glCache();
     const setup = glSetup(regl, mouse);
-    const drawEmptyCube = glEmptyCube(regl);
-    const texCube = glTexCube(regl);
+    const drawEmptyCube = glEmptyCube(regl, cache);
+    const drawTexCube = glTexCube(regl, cache);
     const drawLight = glLight(cache, ui);
     const drawAmbient = glAmbient(cache, ui);
 
@@ -51,51 +52,47 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
         camera: [0, 0, 8],
     });
     
-    let drawCube = drawEmptyCube;
-    let drawTexCube;
-
-    let type:CubeType = CubeType.empty;
-
+    let drawCube = () => {};
+    let loadingCube;
     const { light, lightPosition, ambientLight } = ui.effects;
 
-    function run() {
-        regl.clear({
+    regl.frame(() => {
+         regl.clear({
             depth: 1,
             color: [0, 0, 0, 1],
         })
         
         mouse.tick();
-
-        const envSpec = {
+        setup({
             light,
             lightPosition,
             ambientLight,
-        }
-
-        drawLight();
-        drawAmbient();
-
-        if (type === CubeType.empty) {
-            setup(envSpec, () => drawEmptyCube(cache));
-        }
-
-        else {
-            setup(envSpec, () => drawTexCube(cache));
-        }
-    }
-
-    run();
-
-    regl.frame(() => {
-
+        }, () => drawCube());
     });
 
-    return {
+    function loadEffects () {
+        drawLight();
+        drawAmbient();
+    }
+
+    const res:glMainT = {
         empty: () => {
-            drawCube = drawEmptyCube;
+            loadEffects();
+
+            drawCube = drawEmptyCube();
+            loadingCube = () => drawCube = drawEmptyCube();
         },
         texture: (spec) => {
-            drawTexCube = texCube(spec, type);
+            loadEffects();
+
+            drawTexCube(spec, drawCube);
+            loadingCube = () => drawTexCube(spec, drawCube);
         },
+        reload: () => {
+            loadEffects();
+            loadingCube();
+        },        
     }
+
+    return res; 
 }
