@@ -18,6 +18,3 @@ baisc：
 further：
 - read all voxels from server
 - select voxel and modify the data
-
-明天记得把ambient color修复一下。
-再测一下性能就OK了。
