@@ -44,7 +44,7 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
     const cache = glCache();
     const setup = glSetup(regl, mouse);
     const drawEmptyCube = glEmptyCube(regl, cache);
-    const drawTexCube = glTexCube(regl, cache);
+    const texCube = glTexCube(regl, cache);
     const drawLight = glLight(cache, ui);
     const drawAmbient = glAmbient(cache, ui);
 
@@ -52,9 +52,9 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
         camera: [0, 0, 8],
     });
     
-    let drawCube = () => {};
+    let drawCube:() => void = () => {};
     let loadingCube;
-    const { light, lightPosition, ambientLight } = ui.effects;
+    const { effects } = ui;
 
     regl.frame(() => {
          regl.clear({
@@ -64,10 +64,10 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
         
         mouse.tick();
         setup({
-            light,
-            lightPosition,
-            ambientLight,
-        }, () => drawCube());
+            light: effects.light,
+            lightPosition: effects.lightPosition,
+            ambientLight: effects.ambientLight,
+        }, drawCube);
     });
 
     function loadEffects () {
@@ -85,8 +85,8 @@ export function glMain (canvas:HTMLCanvasElement, ui:UI) : glMainT {
         texture: (spec) => {
             loadEffects();
 
-            drawTexCube(spec, drawCube);
-            loadingCube = () => drawTexCube(spec, drawCube);
+            texCube(spec, (drawTexCube) => drawCube = drawTexCube);
+            loadingCube = () => texCube(spec, (drawTexCube) => drawCube = drawTexCube);
         },
         reload: () => {
             loadEffects();

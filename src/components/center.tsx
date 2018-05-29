@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { UI } from '../client/ui';
 import { Face } from '../client/texture';
-import { glMain } from '../gl/main';
+import { glMain } from '../gl/glMain';
 
 import { TextureBox } from './texture-box';
 

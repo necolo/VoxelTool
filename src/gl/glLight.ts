@@ -1,11 +1,11 @@
-import { glCacheFunc } from './glCache';
+import { glCacheFunc, glModules } from './glCache';
 import { UI } from '../client/ui';
 
 export function glLight(cache:glCacheFunc, ui:UI) {
     return function () {
         const { onLight } = ui.effects;
         if (onLight) {
-            cache.set('light', {
+            cache.set(glModules.light, {
                 vert: {
                     prefix: `
                     attribute vec3 normal;
@@ -22,16 +22,20 @@ export function glLight(cache:glCacheFunc, ui:UI) {
                     uniform vec3 lightColor, lightPosition;
                     varying vec4 v_cameraPosition;
                     varying vec3 v_normal;
+
+                    #define LIGHT
                     `,
                     main: `
                     vec3 lightDirection = normalize(lightPosition - v_cameraPosition.xyz / v_cameraPosition.w);
                     float nDotL = max(dot(lightDirection, v_normal), 0.);
-                    gl_FragColor = vec4(lightColor * gl_FragColor.rgb * nDotL, gl_FragColor.a);
+                    vec3 light = lightColor * color.rgb * nDotL;
+
+                    gl_FragColor = vec4(light, color.a);
                     `,
                 }
             });
         } else {
-            cache.remove('light');
+            cache.remove(glModules.light);
         }
     }
 }

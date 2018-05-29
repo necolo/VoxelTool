@@ -36,14 +36,13 @@ export class EffectUI extends React.Component<props, state> {
                     />
                 </div>
 
-                <div className="box">
-                    <span>light color</span>
-                    { renderNumberInputs({
-                        length: 3,
-                        target:  effects.light,
-                        onChange: (value, i) => effects.updateProps('light', value, i),
-                    })}
-                </div>
+               <div className="box">
+                <span>light color</span>
+                <input type="color"
+                    value={vec2color(effects.light)}
+                    onChange={(ev) => effects.updateProps('light', color2vec(ev.target.value))}
+                />
+               </div> 
 
                 <div className="box">
                     <span>light position</span>
@@ -64,13 +63,37 @@ export class EffectUI extends React.Component<props, state> {
 
                 <div className="box">
                     <span>ambient color</span>
-                    { renderNumberInputs({
-                        length: 3,
-                        target: effects.ambientLight,
-                        onChange: (value, i) => effects.updateProps('ambientLight', value, i),
-                    })}
+                    <input type="color"
+                        value={vec2color(effects.ambientLight)}
+                        onChange={(ev) => effects.updateProps('ambientLight', color2vec(ev.target.value))}
+                    />
                 </div>
             </div>
         )
+    }
+}
+
+function color2vec(color:string) {
+    let r = color.substr(1, 2);
+    let g = color.substr(3, 2);
+    let b = color.substr(5, 2);
+
+    return [r, g, b].map(hex2float);
+
+
+    function hex2float(h:string) {
+        return parseInt(h, 16) / 255;
+    }
+}
+
+function vec2color (x:number[]) {
+    return '#' + floatToHex(x[0]) + floatToHex(x[1]) + floatToHex(x[2]);
+
+    function floatToHex (x:number) {
+        const y = (Math.round(255 * x) | 0).toString(16);
+        if (y.length < 2) {
+            return '0' + y;
+        }
+        return y;
     }
 }

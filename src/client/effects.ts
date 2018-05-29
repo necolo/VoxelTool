@@ -1,5 +1,5 @@
 import { UIListener } from '../client/uiListener';
-import { glMainT } from '../gl/main';
+import { glMainT } from '../gl/glMain';
 
 export class Effects {
     public light:number[];
@@ -14,7 +14,7 @@ export class Effects {
     constructor (glCube:glMainT) {
         this.light = [1.0, 1.0, 1.0];
         this.lightPosition = [20, 0, 0];
-        this.ambientLight = [0.8, 0.8, 0.8];
+        this.ambientLight = [0.5, 0.5, 0.5];
         this.onLight = true;
         this.onAmbient = true;
     }

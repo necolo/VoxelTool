@@ -5,7 +5,7 @@ import { ClientProtocol } from './protocol';
 import { Texture, Face } from './texture';
 import { Voxel, Thumbnail } from './voxel';
 import { Effects } from './effects';
-import { glMainT } from '../gl/main';
+import { glMainT } from '../gl/glMain';
 
 export interface UIState {
     categoryList:string[];

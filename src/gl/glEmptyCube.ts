@@ -1,7 +1,7 @@
-import { glCacheFunc } from './glCache';
+import { glCacheFunc, glModules } from './glCache';
 
 export function glEmptyCube(regl, cache:glCacheFunc) {
-    cache.set('base', {
+    cache.set(glModules.base, {
         vert: {
             prefix: `
             attribute vec3 color;
@@ -16,7 +16,8 @@ export function glEmptyCube(regl, cache:glCacheFunc) {
             varying vec3 v_color;
             `,
             main: `
-            gl_FragColor = vec4(v_color, 1.);
+            vec4 color = vec4(v_color, 1.);
+            gl_FragColor = color;
             `,
         }
     });

@@ -11,27 +11,39 @@ export type shaderT = {
 }
 
 export type glCacheT = {
-    [name:string]:{
-        vert:shaderT,
-        frag:shaderT,
-    },
-}
+    vert:shaderT,
+    frag:shaderT,
+}[];
 
 export type glCacheFunc = {
-    set: (name:string, shader: {vert:shaderT, frag:shaderT}) => void,
-    remove: (name:string) => void,
+    set: (module:glModules, shader: {vert:shaderT, frag:shaderT}) => void,
+    remove: (module:glModules) => void,
     build: () => glslT,
 }
 
-export function glCache () {
-    const cache:glCacheT = {};
+export enum glModules {
+    base,
+    light,
+    ambient,
+    length,
+}
+
+export function glCache () : glCacheFunc {
+    const cache:glCacheT = new Array(glModules.length);
+
+    function alloc() : {vert:shaderT, frag:shaderT}{
+        return {
+            vert: {prefix: '', main: ''},
+            frag: {prefix: '', main: ''},
+        }
+    }
 
     return {
-        set: (name, shader) => {
-            cache[name] = shader;
+        set: (module:glModules, shader:{vert:shaderT, frag:shaderT}) => {
+            cache[module] = shader;
         },
-        remove: (name) => {
-            delete cache[name];
+        remove: (module:glModules) => {
+            cache[module] = alloc();
         },
         build: () : glslT => {
             const shaders = Object.keys(cache);
@@ -39,33 +51,22 @@ export function glCache () {
                 vert: `
                 attribute vec3 position;
                 uniform mat4 projection, view;
-                ${shaders.map((shader) => cache[shader].vert.prefix).join('')}
+                ${cache.map((shader) => shader.vert.prefix).join('')}
 
                 void main() {
                     gl_Position = projection * view * vec4(position, 1.);
-                    ${cache.base.vert.main}
-                    ${shaders.map((shader) => {
-                        if (shader !== 'base') return cache[shader].vert.main;
-                        else return '';
-                    }).join('')}
+                    ${cache.map((shader) => shader.vert.main).join('')}
                 }
                 `,
                 frag: `
                 precision mediump float; 
-                ${shaders.map((shader) => cache[shader].frag.prefix).join('')}
+                ${cache.map((shader) => shader.frag.prefix).join('')}
 
                 void main () {
-                    ${cache.base.frag.main}
-                    ${shaders.map((shader) => {
-                        if (shader !== 'base') return cache[shader].frag.main;
-                        else return '';
-                    }).join('')}
+                    ${cache.map((shader) => shader.frag.main).join('')}
                 }
                 `,
             }
-
-            console.log(res.vert);
-            console.log(res.frag);
             return res;
         }
     }

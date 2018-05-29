@@ -1,5 +1,5 @@
 import { Face } from '../client/texture';
-import { glCacheFunc } from './glCache';
+import { glCacheFunc, glModules } from './glCache';
 
 export type GLTextureSpec = {
     tex:{[face:number]:{
@@ -12,7 +12,7 @@ export type GLTextureSpec = {
 }
 
 export function glTexCube (regl, cache:glCacheFunc) {
-    return function (spec:GLTextureSpec, drawCube:any) {
+    return function (spec:GLTextureSpec, next:(gl: () => void) => void) {
         let count = 0;
         const faces:HTMLImageElement[] = new Array(6);
         // posX, negX, posY, negY, posZ, negZ
@@ -29,10 +29,10 @@ export function glTexCube (regl, cache:glCacheFunc) {
         faces[4].src = spec.tex[Face.front].texture;
         faces[5].src = spec.tex[Face.back].texture;
 
-        cache.set('base', {
+        cache.set(glModules.base, {
             vert: {
                 prefix: `
-                varying vec3 v_texCoord,
+                varying vec3 v_texCoord;
                 `,
                 main: `
                 v_texCoord = position;
@@ -44,29 +44,11 @@ export function glTexCube (regl, cache:glCacheFunc) {
                 uniform samplerCube cube;
                 `,
                 main: `
-                gl_FragColor = textureCube(cube, v_texCoord); 
+                vec4 color = textureCube(cube, v_texCoord); 
+                gl_FragColor = color; 
                 `,
             },
         });
-
-        const glSpec = Object.assign(cache.build(), {
-            cube: regl.cube(...faces),
-        });
-
-        const draw = regl({
-            vert: regl.prop('vert'),
-            frag: regl.prop('frag'),
-            uniforms: {
-                cube: regl.prop('cube'),
-            },
-            blend: {
-                enable: true,
-                func: {
-                    src: 1,
-                    dst: 'one minus src alpha',
-                }
-            }            
-        })
 
         function run() {
             if (count < 5) {
@@ -77,10 +59,27 @@ export function glTexCube (regl, cache:glCacheFunc) {
                     return;
                 }
 
-                drawCube = () => {
-                    draw(glSpec);
-                }
-            }    
+                const glSpec = Object.assign(cache.build(), {
+                    cube: regl.cube(...faces),
+                });
+
+                next(() => {
+                    regl({
+                        vert: regl.prop('vert'),
+                        frag: regl.prop('frag'),
+                        uniforms: {
+                            cube: regl.prop('cube'),
+                        },
+                        blend: {
+                            enable: true,
+                            func: {
+                                src: 1,
+                                dst: 'one minus src alpha',
+                            }
+                        }            
+                    })(glSpec);
+                })
+            }
         }
     }
 }

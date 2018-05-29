@@ -1,4 +1,4 @@
-import { glCacheFunc } from './glCache';
+import { glCacheFunc, glModules } from './glCache';
 import { UI } from '../client/ui';
 
 export function glAmbient(cache:glCacheFunc, ui:UI) {
@@ -6,7 +6,7 @@ export function glAmbient(cache:glCacheFunc, ui:UI) {
         const { onAmbient } = ui.effects;
 
         if (onAmbient) {
-            cache.set('embient', {
+            cache.set(glModules.ambient, {
                 vert: {
                     prefix: `
                     `,
@@ -18,12 +18,20 @@ export function glAmbient(cache:glCacheFunc, ui:UI) {
                     uniform vec3 ambientLight;
                     `,
                     main: `
-                    gl_FragColor = vec4(gl_FragColor.rgb + ambientLight, gl_FragColor.a);
+                    vec3 ambient = ambientLight * color.rgb;
+
+                    #ifdef LIGHT
+                    gl_FragColor = vec4(light + ambient, color.a);
+
+                    #else
+                    gl_FragColor = vec4(ambient, color.a);
+
+                    #endif
                     `,
                 }
             });
         } else {
-            cache.remove('embient');
+            cache.remove(glModules.ambient);
         }
     }
 }
